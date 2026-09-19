@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Kullanıcı yalnızca kendi belgelerine erişebilir.
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Ayarlar dokümanında yalnızca beklenen alanların yazılmasına izin ver,
+      // negatif/boş değerleri reddet.
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.dailyLimit is number
+        && request.resource.data.dailyLimit > 0
+        && request.resource.data.cigarettesPerPack is number
+        && request.resource.data.cigarettesPerPack > 0
+        && request.resource.data.packagePrice is number
+        && request.resource.data.packagePrice >= 0;
+
+      match /smokes/{smokeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /dailyLedger/{date} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /limitHistory/{changeId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid == userId
+          && request.resource.data.newLimit is number
+          && request.resource.data.newLimit > 0;
+      }
+    }
+
+    // Tanımlanmamış her şey varsayılan olarak kapalı.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
