@@ -3,6 +3,7 @@ import {
   getDoc,
   setDoc,
   addDoc,
+  deleteDoc,
   collection,
   query,
   where,
@@ -14,7 +15,7 @@ import {
   limit as fsLimit,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { UserSettings, SmokeRecord, DailyLedgerEntry } from "../types";
+import type { UserSettings, SmokeRecord, DailyLedgerEntry, Goal } from "../types";
 import {
   calculateDailyAllowance,
   calculateRemainingAllowance,
@@ -24,7 +25,7 @@ import { toLocalDateString, addDaysToDateString } from "../logic/dateUtils";
 const DEFAULT_SETTINGS: Omit<UserSettings, "createdAt" | "updatedAt"> = {
   dailyLimit: 10,
   cigarettesPerPack: 20,
-  packagePrice: 350,
+  packagePrice: 130,
 };
 
 // ---------- Kullanıcı Ayarları ----------
@@ -311,4 +312,42 @@ export async function resetAllUserData(uid: string): Promise<void> {
   await deleteCollectionInBatches(uid, "smokes");
   await deleteCollectionInBatches(uid, "dailyLedger");
   await deleteCollectionInBatches(uid, "limitHistory");
+}
+
+// ---------- Hedef Sistemi ----------
+
+function goalRef(uid: string) {
+  return doc(db, "users", uid, "goal", "current");
+}
+
+export function subscribeGoal(
+  uid: string,
+  callback: (goal: Goal | null) => void
+) {
+  return onSnapshot(goalRef(uid), (snap) => {
+    callback(snap.exists() ? (snap.data() as Goal) : null);
+  });
+}
+
+export async function setGoal(
+  uid: string,
+  targetLimit: number,
+  targetDate: string | null,
+  startLimit: number,
+  startDate: string
+): Promise<void> {
+  if (targetLimit <= 0) {
+    throw new Error("Hedef limit sıfır veya daha küçük olamaz.");
+  }
+  await setDoc(goalRef(uid), {
+    startDate,
+    startLimit,
+    targetLimit,
+    targetDate,
+    createdAt: Date.now(),
+  });
+}
+
+export async function clearGoal(uid: string): Promise<void> {
+  await deleteDoc(goalRef(uid));
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
+import { useGoal } from "../hooks/useGoal";
 import {
   updateUserSettings,
   changeDailyLimit,
@@ -15,10 +16,14 @@ export function SettingsScreen() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const settings = useUserSettings(uid);
+  const { goal, saveGoal, removeGoal } = useGoal(uid);
 
   const [limitInput, setLimitInput] = useState("");
   const [priceInput, setPriceInput] = useState("");
   const [countInput, setCountInput] = useState("");
+  const [goalLimitInput, setGoalLimitInput] = useState("");
+  const [goalDateInput, setGoalDateInput] = useState("");
+  const [savingGoal, setSavingGoal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -77,6 +82,43 @@ export function SettingsScreen() {
       setMessage("Güncellenemedi, tekrar deneyin.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSetGoal() {
+    const targetLimit = Number(goalLimitInput);
+    if (!Number.isFinite(targetLimit) || targetLimit <= 0) {
+      setMessage("Geçerli bir hedef limit girin.");
+      return;
+    }
+    setSavingGoal(true);
+    setMessage(null);
+    try {
+      await saveGoal(
+        targetLimit,
+        goalDateInput || null,
+        settings!.dailyLimit,
+        todayLocalDateString()
+      );
+      setGoalLimitInput("");
+      setGoalDateInput("");
+      setMessage("Hedefin kaydedildi.");
+    } catch {
+      setMessage("Hedef kaydedilemedi, tekrar deneyin.");
+    } finally {
+      setSavingGoal(false);
+    }
+  }
+
+  async function handleClearGoal() {
+    setSavingGoal(true);
+    try {
+      await removeGoal();
+      setMessage("Hedef kaldırıldı.");
+    } catch {
+      setMessage("Hedef kaldırılamadı, tekrar deneyin.");
+    } finally {
+      setSavingGoal(false);
     }
   }
 
@@ -159,6 +201,55 @@ export function SettingsScreen() {
       </Card>
 
       <Card>
+        <h2 className="font-semibold mb-1">🎯 Hedef</h2>
+        {goal ? (
+          <>
+            <p className="text-sm text-[#6b7280] mb-3">
+              Hedef günlük limit: <span className="font-semibold text-[#1f2328]">{goal.targetLimit}</span>
+              {goal.targetDate && (
+                <>
+                  {" "}
+                  · Tarih: <span className="font-semibold text-[#1f2328]">{goal.targetDate}</span>
+                </>
+              )}
+            </p>
+            <GhostButton onClick={handleClearGoal} disabled={savingGoal} className="w-full py-2.5">
+              Hedefi Kaldır
+            </GhostButton>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-[#6b7280] mb-3">
+              Günlük limitini zamanla azaltmak için bir hedef belirle. Ana sayfada
+              ilerlemeni ve serini görürsün.
+            </p>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="number"
+                min={1}
+                placeholder="Hedef limit (örn. 5)"
+                value={goalLimitInput}
+                onChange={(e) => setGoalLimitInput(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a]"
+              />
+              <input
+                type="date"
+                value={goalDateInput}
+                onChange={(e) => setGoalDateInput(e.target.value)}
+                className="flex-1 px-4 py-2.5 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a] text-sm"
+              />
+            </div>
+            <p className="text-xs text-[#9ca3af] mb-3">
+              Tarih opsiyonel — boş bırakırsan sadece "bu limite in" hedefi olarak kaydedilir.
+            </p>
+            <PrimaryButton onClick={handleSetGoal} disabled={savingGoal} className="w-full py-2.5">
+              Hedef Belirle
+            </PrimaryButton>
+          </>
+        )}
+      </Card>
+
+      <Card>
         <h2 className="font-semibold mb-1">Hesap</h2>
         <p className="text-sm text-[#6b7280] mb-3">{user?.email}</p>
         <GhostButton onClick={() => logOut()} className="w-full py-2.5">
@@ -167,7 +258,6 @@ export function SettingsScreen() {
       </Card>
 
       <Card>
-        <h2 className="font-semibold mb-1 text-[#dc2626]">Tehlikeli Bölge</h2>
         <p className="text-sm text-[#6b7280] mb-3">
           Tüm sigara geçmişini, istatistikleri ve günlük hak devir kayıtlarını siler.
           Günlük limit, paket fiyatı ve hesabın korunur.

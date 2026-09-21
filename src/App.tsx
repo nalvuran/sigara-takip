@@ -6,6 +6,7 @@ import { HomeScreen } from "./screens/HomeScreen";
 import { StatsScreen } from "./screens/StatsScreen";
 import { HistoryScreen } from "./screens/HistoryScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { AchievementsScreen } from "./screens/AchievementsScreen";
 
 function App() {
   const { user, loading } = useAuth();
@@ -29,6 +30,7 @@ function App() {
         <Route path="/" element={<HomeScreen />} />
         <Route path="/istatistik" element={<StatsScreen />} />
         <Route path="/gecmis" element={<HistoryScreen />} />
+        <Route path="/basarilar" element={<AchievementsScreen />} />
         <Route path="/ayarlar" element={<SettingsScreen />} />
       </Routes>
     </BrowserRouter>

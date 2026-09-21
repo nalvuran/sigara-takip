@@ -1,15 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useTodayLedger } from "../hooks/useTodayLedger";
 import { useSmokesForDate } from "../hooks/useSmokes";
-import { Card, PrimaryButton, GhostButton } from "../components/ui";
+import { useGoal } from "../hooks/useGoal";
+import { useLedgerRange } from "../hooks/useLedgerRange";
+import { Card, GhostButton } from "../components/ui";
 import {
   calculateCostPerCigarette,
   calculateDailyCost,
   calculateSavings,
 } from "../logic/allowance";
-import { formatElapsedSince, toLocalTimeString } from "../logic/dateUtils";
+import { calculateGoalProgress, calculateCurrentStreak } from "../logic/goals";
+import {
+  formatElapsedSince,
+  toLocalTimeString,
+  addDaysToDateString,
+} from "../logic/dateUtils";
 
 export function HomeScreen() {
   const { user } = useAuth();
@@ -17,6 +25,8 @@ export function HomeScreen() {
   const settings = useUserSettings(uid);
   const { today, entry, baseLimit, smoke, undo } = useTodayLedger(uid, settings);
   const smokes = useSmokesForDate(uid, today);
+  const { goal } = useGoal(uid);
+  const ledgerHistory = useLedgerRange(uid, addDaysToDateString(today, -90), today);
 
   const [busy, setBusy] = useState(false);
   const [showUndo, setShowUndo] = useState(false);
@@ -72,6 +82,16 @@ export function HomeScreen() {
     setShowUndo(false);
   }
 
+  const currentStreak = useMemo(
+    () => calculateCurrentStreak(ledgerHistory),
+    [ledgerHistory]
+  );
+
+  const goalProgress = useMemo(() => {
+    if (!goal) return null;
+    return calculateGoalProgress(goal, settings?.dailyLimit ?? baseLimit, today);
+  }, [goal, settings, baseLimit, today]);
+
   const remainingIsNegative = remaining < 0;
 
   return (
@@ -91,13 +111,16 @@ export function HomeScreen() {
         {remainingIsNegative ? "hak açığın var" : "sigara hakkın kaldı"}
       </p>
 
-      <PrimaryButton
-        onClick={handleSmoke}
-        disabled={busy}
-        className="w-full py-6 text-xl mb-3"
-      >
-        🚬 İçtim
-      </PrimaryButton>
+      <div className="flex justify-center mb-3">
+        <button
+          onClick={handleSmoke}
+          disabled={busy}
+          aria-label="İçtim"
+          className="w-32 h-32 rounded-full bg-[#dc2626] active:bg-[#b91c1c] disabled:opacity-40 disabled:active:bg-[#dc2626] shadow-lg flex items-center justify-center text-6xl transition-colors"
+        >
+          🚭
+        </button>
+      </div>
 
       {lastSmoke && showUndo && (
         <GhostButton onClick={handleUndo} className="w-full py-2.5 text-sm mb-2">
@@ -113,6 +136,50 @@ export function HomeScreen() {
         <Card className="mb-4 !py-4">
           <p className="text-sm text-[#6b7280] leading-relaxed">{rolloverMessage}</p>
         </Card>
+      )}
+
+      {currentStreak > 0 && (
+        <Card className="mb-4 !py-4 flex items-center gap-3">
+          <span className="text-2xl">🔥</span>
+          <p className="text-sm">
+            <span className="font-semibold">{currentStreak} gün</span> üst üste
+            limitin altında kaldın!
+          </p>
+        </Card>
+      )}
+
+      {goal && goalProgress ? (
+        <Card className="mb-4 !py-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold">🎯 Hedef: {goal.targetLimit}</p>
+            {goalProgress.percentComplete !== null && (
+              <p className="text-xs text-[#6b7280]">%{goalProgress.percentComplete}</p>
+            )}
+          </div>
+          {goalProgress.percentComplete !== null && (
+            <div className="h-2 bg-[#f1f2f4] rounded-full overflow-hidden mb-2">
+              <div
+                className="h-full bg-[#16a34a] rounded-full transition-all"
+                style={{ width: `${goalProgress.percentComplete}%` }}
+              />
+            </div>
+          )}
+          <p className="text-xs text-[#6b7280]">
+            {goalProgress.isAheadOrOnTrack
+              ? "Hedefinle uyumlu gidiyorsun 👍"
+              : "Şu an hedefin biraz gerisindesin, sorun değil, devam et"}
+          </p>
+        </Card>
+      ) : (
+        !goal && (
+          <Link to="/ayarlar">
+            <Card className="mb-4 !py-4">
+              <p className="text-sm text-[#6b7280]">
+                🎯 Henüz bir hedefin yok. Azaltma hedefi belirlemek için Ayarlar'a git.
+              </p>
+            </Card>
+          </Link>
+        )
       )}
 
       <div className="grid grid-cols-2 gap-3">

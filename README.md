@@ -56,16 +56,24 @@ remaining(gün) = allowance(gün) - consumption(gün)
 `remaining` pozitifse ertesi güne devreder, negatifse borç olarak düşülür. Detaylı
 açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.test.ts`.
 
-> **Not:** Orijinal spesifikasyonun 24. bölümündeki "TEST 3" senaryosu (limit=10,
-> gün1=8, gün2=7 -> gün3 hakkı **13**) ile 5. bölümdeki ÖRNEK 2'nin adım adım
-> çözümü (aynı senaryo için sonuç **15**) birbiriyle çelişiyor. Uygulama, tek ve
-> tutarlı formülü (bölüm 6) ve ÖRNEK 2'yi referans alarak **15**'i doğru kabul
-> eder. Bu netleştirilmesi gereken bir noktadır.
+> **Not (çözüldü):** Orijinal spesifikasyonun 24. bölümündeki "TEST 3" senaryosu
+> (limit=10, gün1=8, gün2=7 -> gün3 hakkı 13) ile 5. bölümdeki ÖRNEK 2'nin adım
+> adım çözümü (aynı senaryo için sonuç 15) birbiriyle çelişiyordu. Kullanıcıyla
+> netleştirildi: **doğru sonuç 15**, formül ve testler buna göre doğrulandı.
 
-## Bilinen sınırlamalar / sonraki adımlar (Aşama 3)
-- PWA manifest'i eklendi ancak `public/icon-192.png` ve `public/icon-512.png`
-  dosyaları henüz yok — gerçek uygulama ikonlarıyla eklenmeli.
-- Hedef sistemi, başarılar ve gelişmiş grafikler henüz eklenmedi.
+## Bilinen sınırlamalar / sonraki adımlar
+- Build boyutu ~1.36 MB (recharts eklenince büyüdü) — istenirse code-splitting ile küçültülebilir, acil değil.
 - `dailyLedger` kayıtları uygulama açıldığında proaktif olarak oluşturulur;
   uygulamanın hiç açılmadığı günler için geriye dönük ledger oluşturma
   (backfill) eklenmemiştir.
+
+## Aşama 3 — Tamamlananlar
+- **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
+- **Hedef sistemi**: Ayarlar'dan hedef günlük limit (+ opsiyonel tarih) belirlenebilir. Ana sayfada ilerleme çubuğu ve "hedefin gerisinde/ilerisinde" durumu gösterilir. Mantık: `src/logic/goals.ts` (test edilmiş).
+- **Başarılar**: 8 rozet (seri, tasarruf, sadakat, hedef) — `src/logic/achievements.ts` (test edilmiş), yeni "Başarılar" sekmesinde gösterilir.
+- **Gelişmiş grafikler**: İstatistikler ekranına recharts ile günlük tüketim bar grafiği + limit referans çizgisi eklendi.
+
+Yeni Firestore koleksiyonu (`users/{uid}/goal/current`) için güvenlik kuralı `firestore.rules`'a eklendi — canlıya almadan önce tekrar deploy edilmeli:
+```bash
+firebase deploy --only firestore:rules,hosting
+```

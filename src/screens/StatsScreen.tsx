@@ -1,4 +1,14 @@
 import { useMemo, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  CartesianGrid,
+} from "recharts";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useSmokesRange } from "../hooks/useSmokes";
@@ -77,6 +87,16 @@ export function StatsScreen() {
       0
     );
 
+    const chartData = [...ledgerEntries]
+      .sort((a, b) => (a.date < b.date ? -1 : 1))
+      .slice(-60) // okunabilirlik için en fazla son 60 gün
+      .map((e) => ({
+        date: e.date,
+        label: `${e.date.slice(8, 10)}/${e.date.slice(5, 7)}`,
+        consumption: e.consumption,
+        baseLimit: e.baseLimit,
+      }));
+
     return {
       totalSmokes,
       dailyAverage,
@@ -86,6 +106,7 @@ export function StatsScreen() {
       longestGap: calculateLongestSmokeFreeInterval(allIntervals),
       totalCost,
       totalSavings,
+      chartData,
     };
   }, [smokes, ledgerEntries, costPerCigarette]);
 
@@ -108,6 +129,39 @@ export function StatsScreen() {
           </button>
         ))}
       </div>
+
+      {stats.chartData.length > 0 && (
+        <Card className="!p-4 mb-5">
+          <p className="text-xs text-[#6b7280] mb-3">Günlük tüketim</p>
+          <div style={{ width: "100%", height: 200 }}>
+            <ResponsiveContainer>
+              <BarChart data={stats.chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f2f4" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10, fill: "#9ca3af" }}
+                  interval="preserveStartEnd"
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  formatter={(value: number) => [`${value} sigara`, "Tüketim"]}
+                  labelFormatter={(label) => `Tarih: ${label}`}
+                  contentStyle={{ borderRadius: 12, border: "none", fontSize: 12 }}
+                />
+                <ReferenceLine
+                  y={stats.chartData[stats.chartData.length - 1]?.baseLimit ?? 0}
+                  stroke="#9ca3af"
+                  strokeDasharray="4 4"
+                  label={{ value: "limit", position: "insideTopRight", fontSize: 10, fill: "#9ca3af" }}
+                />
+                <Bar dataKey="consumption" radius={[6, 6, 0, 0]} fill="#16a34a" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Toplam sigara" value={String(stats.totalSmokes)} />

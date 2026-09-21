@@ -42,3 +42,12 @@ export interface DailyStats {
   averageIntervalMinutes: number | null;
   cost: number;
 }
+
+// Kullanıcının belirlediği hedef (users/{userId}/goal/current)
+export interface Goal {
+  startDate: string; // "YYYY-MM-DD"
+  startLimit: number;
+  targetLimit: number;
+  targetDate: string | null; // null = tarihsiz, sadece limit hedefi
+  createdAt: number;
+}
