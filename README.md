@@ -61,6 +61,14 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 > adım çözümü (aynı senaryo için sonuç 15) birbiriyle çelişiyordu. Kullanıcıyla
 > netleştirildi: **doğru sonuç 15**, formül ve testler buna göre doğrulandı.
 
+## Otomatik Deploy (GitHub Actions)
+`main` dalına her push'ta `.github/workflows/firebase-deploy.yml` otomatik olarak
+testleri çalıştırır, build alır ve Firebase Hosting + Firestore kurallarına
+deploy eder. Gerekli tek secret: repo Settings → Secrets and variables →
+Actions altında `FIREBASE_SERVICE_ACCOUNT` (Firebase Console → Project
+settings → Service accounts → Generate new private key ile alınan JSON'ın
+tamamı). Elle `firebase deploy` çalıştırmaya gerek kalmaz.
+
 ## Bilinen sınırlamalar / sonraki adımlar
 - Build boyutu ~1.36 MB (recharts eklenince büyüdü) — istenirse code-splitting ile küçültülebilir, acil değil.
 - `dailyLedger` kayıtları uygulama açıldığında proaktif olarak oluşturulur;
