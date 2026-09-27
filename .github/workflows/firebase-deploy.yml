@@ -24,6 +24,16 @@ jobs:
 
       - name: Production build al
         run: npm run build
+        env:
+          # Not: Bu değerler Firebase'in istemci tarafı (client) config'idir,
+          # her tarayıcının kaynak kodunda zaten görünür durumdadır - gizli
+          # değildir. Güvenlik, Firestore Security Rules ile sağlanır.
+          VITE_FIREBASE_API_KEY: "AIzaSyA8QAnUE3bEGW0qw-0V84I4cdFF08CLaK4"
+          VITE_FIREBASE_AUTH_DOMAIN: "sigara-takip-b2f0a.firebaseapp.com"
+          VITE_FIREBASE_PROJECT_ID: "sigara-takip-b2f0a"
+          VITE_FIREBASE_STORAGE_BUCKET: "sigara-takip-b2f0a.firebasestorage.app"
+          VITE_FIREBASE_MESSAGING_SENDER_ID: "842228984200"
+          VITE_FIREBASE_APP_ID: "1:842228984200:web:bf1e10c7095fc8f25c323d"
 
       - name: Firebase Hosting'e deploy et
         uses: FirebaseExtended/action-hosting-deploy@v0
