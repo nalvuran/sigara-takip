@@ -9,14 +9,20 @@ interface ReasonSheetProps {
 
 export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
   const [visible, setVisible] = useState(false);
+  const [bubblesIn, setBubblesIn] = useState(false);
 
   useEffect(() => {
     if (open) {
-      // Bir sonraki frame'de görünür yap ki transition tetiklensin.
       const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
+      // Baloncuklar, sheet tamamen yukarı kaydıktan hemen sonra sırayla belirir.
+      const t = setTimeout(() => setBubblesIn(true), 200);
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(t);
+      };
     }
     setVisible(false);
+    setBubblesIn(false);
   }, [open]);
 
   if (!open) return null;
@@ -37,7 +43,7 @@ export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
       >
         <div className="w-10 h-1.5 bg-[#e5e7eb] rounded-full mx-auto mb-4" />
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Neden içtin?</h2>
           <button
             onClick={onDismiss}
@@ -48,22 +54,28 @@ export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          {SMOKE_REASONS.map((r) => (
+        <div className="flex flex-wrap justify-center gap-4 px-2">
+          {SMOKE_REASONS.map((r, i) => (
             <button
               key={r.id}
               onClick={() => onSelect(r.id)}
-              className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-[#f5f6f7] active:bg-[#e5e7eb] transition-colors"
+              style={{
+                backgroundColor: r.color,
+                transitionDelay: bubblesIn ? `${i * 45}ms` : "0ms",
+              }}
+              className={`flex flex-col items-center justify-center gap-1 w-24 h-24 rounded-full shadow-sm active:scale-90 transition-all duration-300 ease-out ${
+                bubblesIn ? "opacity-100 scale-100" : "opacity-0 scale-50"
+              }`}
             >
-              <span className="text-3xl">{r.emoji}</span>
-              <span className="text-xs font-medium text-[#1f2328] text-center leading-tight">
+              <span className="text-3xl leading-none">{r.emoji}</span>
+              <span className="text-[11px] font-medium text-[#1f2328] text-center leading-tight px-1">
                 {r.label}
               </span>
             </button>
           ))}
         </div>
 
-        <p className="text-xs text-[#9ca3af] text-center mt-4">
+        <p className="text-xs text-[#9ca3af] text-center mt-5">
           İstersen boş geç, dilediğin zaman değiştirebilirsin.
         </p>
       </div>

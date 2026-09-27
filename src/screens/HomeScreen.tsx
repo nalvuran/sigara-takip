@@ -112,7 +112,8 @@ export function HomeScreen() {
           onClick={handleSmoke}
           disabled={busy}
           aria-label="İçtim"
-          className="w-32 h-32 rounded-full bg-[#dc2626] active:bg-[#b91c1c] disabled:opacity-40 disabled:active:bg-[#dc2626] shadow-lg flex items-center justify-center text-6xl transition-colors"
+          className="w-40 h-40 flex items-center justify-center text-8xl active:scale-90 disabled:opacity-40 transition-transform"
+          style={{ filter: "drop-shadow(0 6px 10px rgba(0,0,0,0.15))" }}
         >
           🚭
         </button>

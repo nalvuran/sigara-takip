@@ -348,5 +348,12 @@ export function subscribeFlags(
 }
 
 export async function setFlag(uid: string, name: string): Promise<void> {
-  await setDoc(flagsRef(uid), { [name]: true }, { merge: true });
+  try {
+    await setDoc(flagsRef(uid), { [name]: true }, { merge: true });
+  } catch (err) {
+    // Başarı rozetleri ikincil bir özellik; buradaki bir hata (örn. henüz
+    // deploy edilmemiş güvenlik kuralı) asla ana akışı (sigara ekleme, sebep
+    // kaydetme, geri alma) bozmamalı. Sessizce yut, sadece konsola logla.
+    console.warn(`setFlag(${name}) başarısız oldu, görmezden geliniyor:`, err);
+  }
 }
