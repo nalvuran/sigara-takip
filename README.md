@@ -63,11 +63,20 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 
 ## Otomatik Deploy (GitHub Actions)
 `main` dalına her push'ta `.github/workflows/firebase-deploy.yml` otomatik olarak
-testleri çalıştırır, build alır ve Firebase Hosting + Firestore kurallarına
-deploy eder. Gerekli tek secret: repo Settings → Secrets and variables →
-Actions altında `FIREBASE_SERVICE_ACCOUNT` (Firebase Console → Project
-settings → Service accounts → Generate new private key ile alınan JSON'ın
-tamamı). Elle `firebase deploy` çalıştırmaya gerek kalmaz.
+testleri çalıştırır, build alır ve **Firebase Hosting'e** deploy eder. Gerekli
+secret: repo Settings → Secrets and variables → Actions altında
+`FIREBASE_SERVICE_ACCOUNT` (Firebase Console → Project settings → Service
+accounts → Generate new private key ile alınan JSON'ın tamamı). Ayrıca build
+adımı için `VITE_FIREBASE_*` değerleri workflow dosyasının içinde doğrudan
+tanımlı (bunlar Firebase'in istemci tarafı config'i, gizli değildir).
+
+**Not:** Firestore güvenlik kuralları (`firestore.rules`) ve indeksler otomatik
+deploy edilmiyor — servis hesabının bu işlem için ek bir Google Cloud IAM rolüne
+(Firebase Rules Admin) ihtiyacı var ve bu tekrarlayan sorunlara yol açtığı için
+workflow'dan çıkarıldı. `firestore.rules` değiştiğinde elle deploy et:
+```bash
+firebase deploy --only firestore:rules,firestore:indexes
+```
 
 ## Bilinen sınırlamalar / sonraki adımlar
 - Build boyutu ~1.36 MB (recharts eklenince büyüdü) — istenirse code-splitting ile küçültülebilir, acil değil.

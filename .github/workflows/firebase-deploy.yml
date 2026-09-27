@@ -42,14 +42,7 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           channelId: live
           projectId: sigara-takip-b2f0a
-
-      - name: Firebase CLI kur
-        run: npm install -g firebase-tools
-
-      - name: Servis hesabı anahtarını yaz
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/gcp-key.json
-
-      - name: Firestore kurallarını ve indekslerini deploy et
-        run: firebase deploy --only firestore:rules,firestore:indexes --project sigara-takip-b2f0a
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key.json
+      # Not: Firestore kuralları/indeksleri otomatik deploy'u, servis hesabının
+      # IAM izinleriyle ilgili tekrarlayan sorunlar nedeniyle kaldırıldı.
+      # Kurallar (firestore.rules) değiştiğinde elle deploy edilmeli:
+      #   firebase deploy --only firestore:rules,firestore:indexes
