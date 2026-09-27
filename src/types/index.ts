@@ -13,6 +13,7 @@ export interface SmokeRecord {
   timestamp: number; // epoch ms
   localDate: string; // "YYYY-MM-DD" (Europe/Istanbul gününe göre)
   createdAt: number;
+  reason?: string | null; // bkz. src/logic/reasons.ts - opsiyonel, kullanıcı belirtmeyebilir
 }
 
 // Günlük hak devri kaydı (users/{userId}/dailyLedger/{date})
@@ -41,13 +42,4 @@ export interface DailyStats {
   intervals: number[]; // dakika cinsinden ardışık sigaralar arası süreler
   averageIntervalMinutes: number | null;
   cost: number;
-}
-
-// Kullanıcının belirlediği hedef (users/{userId}/goal/current)
-export interface Goal {
-  startDate: string; // "YYYY-MM-DD"
-  startLimit: number;
-  targetLimit: number;
-  targetDate: string | null; // null = tarihsiz, sadece limit hedefi
-  createdAt: number;
 }

@@ -81,6 +81,27 @@ export function dateRangeUntilToday(
   return days;
 }
 
+/** Europe/Istanbul saatine göre saatin kaçı olduğu (0-23). */
+export function getLocalHour(epochMs: number): number {
+  const formatted = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TIMEZONE,
+    hour: "2-digit",
+    hour12: false,
+  }).format(new Date(epochMs));
+  // Bazı ortamlarda saat 24:00 olarak formatlanabilir (gece yarısı), 0'a normalize et.
+  const hour = parseInt(formatted, 10);
+  return hour === 24 ? 0 : hour;
+}
+
+/** Europe/Istanbul saatine göre bu zaman bir hafta sonu (Cmt/Paz) mı? */
+export function isLocalWeekend(epochMs: number): boolean {
+  const day = new Intl.DateTimeFormat("en-US", {
+    timeZone: TIMEZONE,
+    weekday: "short",
+  }).format(new Date(epochMs));
+  return day === "Sat" || day === "Sun";
+}
+
 /** Milisaniyeyi "X saat Y dakika" biçiminde okunabilir metne çevirir (canlı sayaç için). */
 export function formatElapsedSince(epochMs: number, nowMs: number): string {
   const diffMinutes = Math.max(0, Math.floor((nowMs - epochMs) / 60000));

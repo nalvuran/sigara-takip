@@ -69,11 +69,16 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 
 ## Aşama 3 — Tamamlananlar
 - **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
-- **Hedef sistemi**: Ayarlar'dan hedef günlük limit (+ opsiyonel tarih) belirlenebilir. Ana sayfada ilerleme çubuğu ve "hedefin gerisinde/ilerisinde" durumu gösterilir. Mantık: `src/logic/goals.ts` (test edilmiş).
-- **Başarılar**: 8 rozet (seri, tasarruf, sadakat, hedef) — `src/logic/achievements.ts` (test edilmiş), yeni "Başarılar" sekmesinde gösterilir.
+- **Başarılar**: 21 rozet, 4 kategori (Sadakat, Farkındalık, Keşif, Eğlenceli). Tasarım ilkesi: hiçbiri azaltma/tasarruf/hedef performansı ölçmez — sadece uygulamayla ve kendi verinle ilişkini nötr biçimde yansıtır. Mantık: `src/logic/achievements.ts` (test edilmiş, kod seviyesinde "TL/limit/hedef geçmeyecek" garantisi bir testle korunuyor).
 - **Gelişmiş grafikler**: İstatistikler ekranına recharts ile günlük tüketim bar grafiği + limit referans çizgisi eklendi.
+- **İçme sebebi takibi**: 🚭 butonuna basınca alttan açılan bir sheet ile (opsiyonel) "Neden içtin?" sorulur — Stres / Keyif / Sosyal / Alışkanlık / Sıkıntı. İstatistikler'de sebep dağılımı ve nötr, salt bilgilendirici bir özet cümlesi ("En sık nedenin: ...") gösterilir. Mantık: `src/logic/reasons.ts` (test edilmiş). Uygulama hiçbir öneri/öğüt vermez, sadece örüntüyü gösterir.
 
-Yeni Firestore koleksiyonu (`users/{uid}/goal/current`) için güvenlik kuralı `firestore.rules`'a eklendi — canlıya almadan önce tekrar deploy edilmeli:
+## Kaldırılan özellikler (bilinçli tasarım kararı)
+- **Hedef sistemi** tamamen kaldırıldı — kullanıcıyı azaltmaya yönlendiren bir "hedef/ilerleme" çerçevesi, uygulamanın yargısız-ayna felsefesiyle çelişiyordu.
+- **"İçilmeyen sigaraların değeri" (TL) kartı** kaldırıldı (Ana Sayfa ve İstatistikler) — bu hesap otomatik olarak "az içmek = kazanç" mesajı veriyordu. Sadece nötr "bugünkü/toplam harcama" bilgisi kaldı.
+- Eski "streak" (limit altında kalma serisi) banner'ı da aynı gerekçeyle kaldırıldı; performans ölçen rozetler (savings_*, streak_*) yerine yukarıdaki nötr 21 rozetle değiştirildi.
+
+Yeni Firestore koleksiyonu (`users/{uid}/meta/flags` — başarılar için hafif kullanım bayrakları) için güvenlik kuralı `firestore.rules`'a eklendi — canlıya almadan önce tekrar deploy edilmeli:
 ```bash
 firebase deploy --only firestore:rules,hosting
 ```

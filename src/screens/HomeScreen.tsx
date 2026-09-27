@@ -1,23 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useTodayLedger } from "../hooks/useTodayLedger";
 import { useSmokesForDate } from "../hooks/useSmokes";
-import { useGoal } from "../hooks/useGoal";
-import { useLedgerRange } from "../hooks/useLedgerRange";
 import { Card, GhostButton } from "../components/ui";
-import {
-  calculateCostPerCigarette,
-  calculateDailyCost,
-  calculateSavings,
-} from "../logic/allowance";
-import { calculateGoalProgress, calculateCurrentStreak } from "../logic/goals";
-import {
-  formatElapsedSince,
-  toLocalTimeString,
-  addDaysToDateString,
-} from "../logic/dateUtils";
+import { ReasonSheet } from "../components/ReasonSheet";
+import { setSmokeReason } from "../services/firestoreService";
+import { calculateCostPerCigarette, calculateDailyCost } from "../logic/allowance";
+import { formatElapsedSince, toLocalTimeString } from "../logic/dateUtils";
 
 export function HomeScreen() {
   const { user } = useAuth();
@@ -25,12 +15,12 @@ export function HomeScreen() {
   const settings = useUserSettings(uid);
   const { today, entry, baseLimit, smoke, undo } = useTodayLedger(uid, settings);
   const smokes = useSmokesForDate(uid, today);
-  const { goal } = useGoal(uid);
-  const ledgerHistory = useLedgerRange(uid, addDaysToDateString(today, -90), today);
 
   const [busy, setBusy] = useState(false);
   const [showUndo, setShowUndo] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [reasonSheetOpen, setReasonSheetOpen] = useState(false);
+  const [pendingSmokeId, setPendingSmokeId] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 30_000);
@@ -53,7 +43,6 @@ export function HomeScreen() {
   const remaining = entry?.remaining ?? baseLimit;
 
   const todayCost = calculateDailyCost(consumption, costPerCigarette);
-  const savings = calculateSavings(baseLimit, consumption, costPerCigarette);
 
   const rolloverMessage = useMemo(() => {
     if (!entry) return null;
@@ -69,11 +58,28 @@ export function HomeScreen() {
     if (busy) return;
     setBusy(true);
     try {
-      await smoke();
+      const newId = await smoke();
       setShowUndo(true);
+      if (newId) {
+        setPendingSmokeId(newId);
+        setReasonSheetOpen(true);
+      }
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleReasonSelect(reasonId: string) {
+    if (uid && pendingSmokeId) {
+      await setSmokeReason(uid, pendingSmokeId, reasonId);
+    }
+    setReasonSheetOpen(false);
+    setPendingSmokeId(null);
+  }
+
+  function handleReasonDismiss() {
+    setReasonSheetOpen(false);
+    setPendingSmokeId(null);
   }
 
   async function handleUndo() {
@@ -81,16 +87,6 @@ export function HomeScreen() {
     await undo(lastSmoke.id);
     setShowUndo(false);
   }
-
-  const currentStreak = useMemo(
-    () => calculateCurrentStreak(ledgerHistory),
-    [ledgerHistory]
-  );
-
-  const goalProgress = useMemo(() => {
-    if (!goal) return null;
-    return calculateGoalProgress(goal, settings?.dailyLimit ?? baseLimit, today);
-  }, [goal, settings, baseLimit, today]);
 
   const remainingIsNegative = remaining < 0;
 
@@ -138,50 +134,6 @@ export function HomeScreen() {
         </Card>
       )}
 
-      {currentStreak > 0 && (
-        <Card className="mb-4 !py-4 flex items-center gap-3">
-          <span className="text-2xl">🔥</span>
-          <p className="text-sm">
-            <span className="font-semibold">{currentStreak} gün</span> üst üste
-            limitin altında kaldın!
-          </p>
-        </Card>
-      )}
-
-      {goal && goalProgress ? (
-        <Card className="mb-4 !py-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold">🎯 Hedef: {goal.targetLimit}</p>
-            {goalProgress.percentComplete !== null && (
-              <p className="text-xs text-[#6b7280]">%{goalProgress.percentComplete}</p>
-            )}
-          </div>
-          {goalProgress.percentComplete !== null && (
-            <div className="h-2 bg-[#f1f2f4] rounded-full overflow-hidden mb-2">
-              <div
-                className="h-full bg-[#16a34a] rounded-full transition-all"
-                style={{ width: `${goalProgress.percentComplete}%` }}
-              />
-            </div>
-          )}
-          <p className="text-xs text-[#6b7280]">
-            {goalProgress.isAheadOrOnTrack
-              ? "Hedefinle uyumlu gidiyorsun 👍"
-              : "Şu an hedefin biraz gerisindesin, sorun değil, devam et"}
-          </p>
-        </Card>
-      ) : (
-        !goal && (
-          <Link to="/ayarlar">
-            <Card className="mb-4 !py-4">
-              <p className="text-sm text-[#6b7280]">
-                🎯 Henüz bir hedefin yok. Azaltma hedefi belirlemek için Ayarlar'a git.
-              </p>
-            </Card>
-          </Link>
-        )
-      )}
-
       <div className="grid grid-cols-2 gap-3">
         <Card className="!p-4">
           <p className="text-xs text-[#6b7280] mb-1">⏱ Son sigara</p>
@@ -198,11 +150,13 @@ export function HomeScreen() {
           <p className="text-xs text-[#6b7280] mb-1">💰 Bugünkü harcama</p>
           <p className="text-sm font-semibold">{todayCost.toFixed(2)} TL</p>
         </Card>
-        <Card className="!p-4 col-span-2">
-          <p className="text-xs text-[#6b7280] mb-1">💚 İçilmeyen sigaraların değeri</p>
-          <p className="text-sm font-semibold">{savings.toFixed(2)} TL</p>
-        </Card>
       </div>
+
+      <ReasonSheet
+        open={reasonSheetOpen}
+        onSelect={handleReasonSelect}
+        onDismiss={handleReasonDismiss}
+      />
     </div>
   );
 }

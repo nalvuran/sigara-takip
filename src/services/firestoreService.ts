@@ -3,7 +3,7 @@ import {
   getDoc,
   setDoc,
   addDoc,
-  deleteDoc,
+  updateDoc,
   collection,
   query,
   where,
@@ -15,7 +15,7 @@ import {
   limit as fsLimit,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { UserSettings, SmokeRecord, DailyLedgerEntry, Goal } from "../types";
+import type { UserSettings, SmokeRecord, DailyLedgerEntry } from "../types";
 import {
   calculateDailyAllowance,
   calculateRemainingAllowance,
@@ -253,6 +253,22 @@ export async function undoSmoke(uid: string, smokeId: string): Promise<void> {
       });
     }
   });
+
+  await setFlag(uid, "hasUsedUndo");
+}
+
+/**
+ * Bir sigara kaydına, kullanıcının seçtiği içme sebebini ekler.
+ * Tamamen opsiyoneldir; ledger/consumption'a dokunmaz, sadece kaydı işaretler.
+ */
+export async function setSmokeReason(
+  uid: string,
+  smokeId: string,
+  reason: string
+): Promise<void> {
+  const smokeRef = doc(db, "users", uid, "smokes", smokeId);
+  await updateDoc(smokeRef, { reason });
+  await setFlag(uid, "hasSetReason");
 }
 
 export function subscribeSmokesForDate(
@@ -314,40 +330,23 @@ export async function resetAllUserData(uid: string): Promise<void> {
   await deleteCollectionInBatches(uid, "limitHistory");
 }
 
-// ---------- Hedef Sistemi ----------
+// ---------- Kullanıcı Bayrakları (Başarılar için) ----------
+// Tek seferlik olayları işaretlemek için hafif bir doküman: bir ekranı ilk
+// kez açma, ilk kez Geri Al kullanma, ilk kez sebep seçme gibi.
 
-function goalRef(uid: string) {
-  return doc(db, "users", uid, "goal", "current");
+function flagsRef(uid: string) {
+  return doc(db, "users", uid, "meta", "flags");
 }
 
-export function subscribeGoal(
+export function subscribeFlags(
   uid: string,
-  callback: (goal: Goal | null) => void
+  callback: (flags: Record<string, boolean>) => void
 ) {
-  return onSnapshot(goalRef(uid), (snap) => {
-    callback(snap.exists() ? (snap.data() as Goal) : null);
+  return onSnapshot(flagsRef(uid), (snap) => {
+    callback(snap.exists() ? (snap.data() as Record<string, boolean>) : {});
   });
 }
 
-export async function setGoal(
-  uid: string,
-  targetLimit: number,
-  targetDate: string | null,
-  startLimit: number,
-  startDate: string
-): Promise<void> {
-  if (targetLimit <= 0) {
-    throw new Error("Hedef limit sıfır veya daha küçük olamaz.");
-  }
-  await setDoc(goalRef(uid), {
-    startDate,
-    startLimit,
-    targetLimit,
-    targetDate,
-    createdAt: Date.now(),
-  });
-}
-
-export async function clearGoal(uid: string): Promise<void> {
-  await deleteDoc(goalRef(uid));
+export async function setFlag(uid: string, name: string): Promise<void> {
+  await setDoc(flagsRef(uid), { [name]: true }, { merge: true });
 }

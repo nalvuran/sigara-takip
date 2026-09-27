@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useSmokesRange } from "../hooks/useSmokes";
+import { setFlag } from "../services/firestoreService";
 import { Card } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString, toLocalDayHeading, toLocalTimeString } from "../logic/dateUtils";
+import { getReasonDef } from "../logic/reasons";
 
 const RANGE_DAYS = 60;
 
@@ -12,6 +14,10 @@ export function HistoryScreen() {
   const fromDate = addDaysToDateString(todayLocalDateString(), -RANGE_DAYS);
   const toDate = todayLocalDateString();
   const smokes = useSmokesRange(uid, fromDate, toDate);
+
+  useEffect(() => {
+    if (uid) setFlag(uid, "hasViewedHistory");
+  }, [uid]);
 
   const groups = useMemo(() => {
     const map = new Map<string, typeof smokes>();
@@ -35,7 +41,7 @@ export function HistoryScreen() {
       {groups.length === 0 && (
         <Card>
           <p className="text-[#6b7280] text-sm">
-            Henüz kayıt yok. Ana sayfadan 🚬 İçtim'e bastığında burada görünecek.
+            Henüz kayıt yok. Ana sayfadan sigara ekleyince burada görünecek.
           </p>
         </Card>
       )}
@@ -55,8 +61,13 @@ export function HistoryScreen() {
                     i !== group.list.length - 1 ? "border-b border-black/5" : ""
                   }`}
                 >
-                  <span className="text-lg">🚬</span>
+                  <span className="text-lg">{s.reason ? getReasonDef(s.reason).emoji : "🚬"}</span>
                   <span className="text-[15px]">{toLocalTimeString(s.timestamp)}</span>
+                  {s.reason && (
+                    <span className="text-xs text-[#9ca3af] ml-auto">
+                      {getReasonDef(s.reason).label}
+                    </span>
+                  )}
                 </div>
               ))}
             </Card>

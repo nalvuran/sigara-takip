@@ -29,10 +29,5 @@
     "typescript": "~5.6.2",
     "vite": "^5.4.11",
     "vitest": "^2.1.5"
-  },
-  "allowScripts": {
-    "@firebase/util@1.15.3": true,
-    "esbuild@0.21.5": true,
-    "protobufjs@7.6.6": true
   }
 }

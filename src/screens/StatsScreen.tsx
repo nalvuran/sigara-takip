@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -13,6 +13,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useSmokesRange } from "../hooks/useSmokes";
 import { useLedgerRange } from "../hooks/useLedgerRange";
+import { setFlag } from "../services/firestoreService";
 import { Card } from "../components/ui";
 import {
   calculateCostPerCigarette,
@@ -22,6 +23,7 @@ import {
   formatMinutesAsDuration,
 } from "../logic/allowance";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
+import { calculateReasonBreakdown, buildReasonInsight } from "../logic/reasons";
 
 type FilterKey = "today" | "7d" | "30d" | "all";
 
@@ -39,6 +41,10 @@ export function StatsScreen() {
   const uid = user?.uid ?? null;
   const settings = useUserSettings(uid);
   const [filter, setFilter] = useState<FilterKey>("7d");
+
+  useEffect(() => {
+    if (uid) setFlag(uid, "hasViewedStats");
+  }, [uid]);
 
   const today = todayLocalDateString();
   const activeFilter = FILTERS.find((f) => f.key === filter)!;
@@ -82,10 +88,6 @@ export function StatsScreen() {
       (sum, e) => sum + e.consumption * costPerCigarette,
       0
     );
-    const totalSavings = ledgerEntries.reduce(
-      (sum, e) => sum + Math.max(0, e.baseLimit - e.consumption) * costPerCigarette,
-      0
-    );
 
     const chartData = [...ledgerEntries]
       .sort((a, b) => (a.date < b.date ? -1 : 1))
@@ -97,6 +99,9 @@ export function StatsScreen() {
         baseLimit: e.baseLimit,
       }));
 
+    const reasonBreakdown = calculateReasonBreakdown(smokes);
+    const reasonInsight = buildReasonInsight(reasonBreakdown);
+
     return {
       totalSmokes,
       dailyAverage,
@@ -105,8 +110,9 @@ export function StatsScreen() {
       averageInterval: calculateAverageInterval(allIntervals),
       longestGap: calculateLongestSmokeFreeInterval(allIntervals),
       totalCost,
-      totalSavings,
       chartData,
+      reasonBreakdown,
+      reasonInsight,
     };
   }, [smokes, ledgerEntries, costPerCigarette]);
 
@@ -163,6 +169,39 @@ export function StatsScreen() {
         </Card>
       )}
 
+      {stats.reasonBreakdown.length > 0 && (
+        <Card className="!p-4 mb-5">
+          <p className="text-xs text-[#6b7280] mb-1">Neden içtin?</p>
+          {stats.reasonInsight && (
+            <p className="text-sm font-semibold text-[#16a34a] mb-3">
+              {stats.reasonInsight}
+            </p>
+          )}
+          <div className="space-y-2.5 mt-2">
+            {stats.reasonBreakdown.map((r) => (
+              <div key={r.id}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm">
+                    {r.emoji} {r.label}
+                  </span>
+                  <span className="text-xs text-[#6b7280]">
+                    {r.count} · %{r.percent}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-[#f1f2f4] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      r.id === "belirtilmedi" ? "bg-[#d1d5db]" : "bg-[#16a34a]"
+                    }`}
+                    style={{ width: `${r.percent}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Toplam sigara" value={String(stats.totalSmokes)} />
         <StatCard label="Günlük ortalama" value={stats.dailyAverage.toFixed(1)} />
@@ -183,11 +222,6 @@ export function StatsScreen() {
           }
         />
         <StatCard label="Toplam harcama" value={`${stats.totalCost.toFixed(2)} TL`} />
-        <StatCard
-          label="İçilmeyen sigara değeri"
-          value={`${stats.totalSavings.toFixed(2)} TL`}
-          accent
-        />
       </div>
     </div>
   );
