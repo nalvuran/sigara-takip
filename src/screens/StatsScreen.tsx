@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useSmokesRange } from "../hooks/useSmokes";
 import { useStatsData, type FilterKey } from "../hooks/useStatsData";
+import { useDailyInsight } from "../hooks/useDailyInsight";
 import { Card } from "../components/ui";
 import { FilterChips } from "../components/FilterChips";
 import { ReasonBreakdownCard } from "../components/ReasonBreakdownCard";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
-import { selectDailyInsight } from "../logic/insights";
 
 const ALL_TIME_LOOKBACK_DAYS = 3650;
 
@@ -24,10 +24,7 @@ export function StatsScreen() {
     addDaysToDateString(today, -ALL_TIME_LOOKBACK_DAYS),
     today
   );
-  const dailyInsight = useMemo(
-    () => selectDailyInsight(allTimeSmokes, today),
-    [allTimeSmokes, today]
-  );
+  const dailyInsight = useDailyInsight(uid, allTimeSmokes, today);
 
   return (
     <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
@@ -43,6 +40,15 @@ export function StatsScreen() {
             <p className="text-[15px] leading-relaxed font-medium text-[#16a34a] mt-3">
               {dailyInsight.question}
             </p>
+            <div className="mt-4 pt-4 border-t border-black/5">
+              <p className="text-sm italic leading-relaxed text-[#4b5563]">
+                “{dailyInsight.quote.text}”
+              </p>
+              <p className="text-xs text-[#9ca3af] mt-1.5">
+                — {dailyInsight.quote.author}
+                {dailyInsight.quote.source ? `, ${dailyInsight.quote.source}` : ""}
+              </p>
+            </div>
           </>
         ) : (
           <p className="text-sm leading-relaxed text-[#6b7280]">

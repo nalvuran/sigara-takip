@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { UserSettings, SmokeRecord, DailyLedgerEntry } from "../types";
+import type { DailyInsight } from "../logic/insights";
 import {
   calculateDailyAllowance,
   calculateRemainingAllowance,
@@ -523,4 +524,34 @@ export async function deleteSmokeRecord(
   });
 
   return deleted ? { localDate } : null;
+}
+
+// ---------- Günün Yorumu Geçmişi ----------
+// Tekrara düşmemek için her gün gösterilen kart saklanır. Aynı gün hangi
+// cihazdan bakılırsa bakılsın aynı kart görünür. Kayıtlar `meta` altında
+// "insight-YYYY-MM-DD" kimliğiyle tutulur.
+
+const INSIGHT_PREFIX = "insight-";
+
+export async function getStoredInsights(uid: string): Promise<DailyInsight[]> {
+  const snap = await getDocs(collection(db, "users", uid, "meta"));
+  return snap.docs
+    .filter((d) => d.id.startsWith(INSIGHT_PREFIX))
+    .map((d) => ({ ...(d.data() as DailyInsight), date: d.id.slice(INSIGHT_PREFIX.length) }));
+}
+
+/** O gün için kayıt varsa onu döndürür (iki cihaz yarışırsa ilk yazılan kazanır), yoksa yazar. */
+export async function saveDailyInsight(
+  uid: string,
+  insight: DailyInsight
+): Promise<DailyInsight> {
+  const ref = doc(db, "users", uid, "meta", `${INSIGHT_PREFIX}${insight.date}`);
+  return runTransaction(db, async (tx) => {
+    const existing = await tx.get(ref);
+    if (existing.exists()) {
+      return { ...(existing.data() as DailyInsight), date: insight.date };
+    }
+    tx.set(ref, { ...insight, createdAt: Date.now() });
+    return insight;
+  });
 }
