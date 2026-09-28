@@ -31,7 +31,7 @@ export function StatsScreen() {
 
   return (
     <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-      <h1 className="text-2xl font-bold mb-5">İstatistikler</h1>
+      <h1 className="text-2xl font-bold mb-5">Ayna</h1>
 
       <Card className="!p-5 mb-5">
         <p className="text-xs text-[#6b7280] mb-2">💭 Bugünün yorumu</p>

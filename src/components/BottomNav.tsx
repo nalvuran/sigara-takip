@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const items = [
   { to: "/", label: "Ana Sayfa", icon: "🏠" },
-  { to: "/istatistik", label: "İstatistik", icon: "📊" },
+  { to: "/istatistik", label: "Ayna", icon: "🪞" },
   { to: "/gecmis", label: "Geçmiş", icon: "🕒" },
   { to: "/ayarlar", label: "Ayarlar", icon: "⚙️" },
 ];
