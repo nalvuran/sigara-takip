@@ -167,11 +167,26 @@ export function HistoryScreen() {
                       setDeleteTarget(s);
                     }}
                     aria-label="Kaydı sil"
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-[#9ca3af] active:bg-[#f1f2f4] ${
+                    className={`w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] active:bg-[#f1f2f4] ${
                       s.reason ? "" : "ml-auto"
                     }`}
                   >
-                    🗑
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M6 6l1 14h10l1-14" />
+                      <path d="M10 10v6M14 10v6" />
+                    </svg>
                   </button>
                 </div>
               ))}
