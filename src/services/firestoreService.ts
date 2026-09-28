@@ -359,11 +359,17 @@ export async function addManualSmoke(
   const dailyLimit = settingsSnap.exists()
     ? (settingsSnap.data() as UserSettings).dailyLimit
     : 10;
-  const historySnap = await getDocs(collection(db, "users", uid, "limitHistory"));
-  const history = historySnap.docs.map((d) => ({
-    newLimit: d.data().newLimit as number,
-    effectiveFrom: d.data().effectiveFrom as string,
-  }));
+  // Limit geçmişi okunamazsa (ör. kurallar güncel değilse) ekleme yine de çalışsın.
+  let history: { newLimit: number; effectiveFrom: string }[] = [];
+  try {
+    const historySnap = await getDocs(collection(db, "users", uid, "limitHistory"));
+    history = historySnap.docs.map((d) => ({
+      newLimit: d.data().newLimit as number,
+      effectiveFrom: d.data().effectiveFrom as string,
+    }));
+  } catch {
+    history = [];
+  }
   const defaultBaseLimit = resolveBaseLimitForDate(localDate, dailyLimit, history);
 
   // [localDate, bugün] aralığında ledger kaydı olan günler
