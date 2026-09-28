@@ -84,6 +84,7 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
     return {
       totalSmokes,
       dailyAverage,
+      dailyAverageCost: dailyAverage * costPerCigarette,
       dailyMax,
       dailyMin,
       averageInterval: calculateAverageInterval(allIntervals),

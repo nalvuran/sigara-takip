@@ -9,6 +9,10 @@ export function StatsGrid({ stats }: { stats: Stats }) {
     <div className="grid grid-cols-2 gap-3">
       <StatCard label="Toplam sigara" value={String(stats.totalSmokes)} />
       <StatCard label="Günlük ortalama" value={stats.dailyAverage.toFixed(1)} />
+      <StatCard
+        label="Günlük ortalama harcama"
+        value={`${stats.dailyAverageCost.toFixed(2)} TL`}
+      />
       <StatCard label="Günlük maksimum" value={String(stats.dailyMax)} />
       <StatCard label="Günlük minimum" value={String(stats.dailyMin)} />
       <StatCard
