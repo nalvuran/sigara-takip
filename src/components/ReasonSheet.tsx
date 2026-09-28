@@ -54,21 +54,18 @@ export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
           </button>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 px-2">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-5 px-2">
           {SMOKE_REASONS.map((r, i) => (
             <button
               key={r.id}
               onClick={() => onSelect(r.id)}
-              style={{
-                backgroundColor: r.color,
-                transitionDelay: bubblesIn ? `${i * 45}ms` : "0ms",
-              }}
-              className={`flex flex-col items-center justify-center gap-1 w-24 h-24 rounded-full shadow-sm active:scale-90 transition-all duration-300 ease-out ${
+              style={{ transitionDelay: bubblesIn ? `${i * 45}ms` : "0ms" }}
+              className={`flex flex-col items-center gap-1.5 w-24 active:scale-90 transition-all duration-300 ease-out ${
                 bubblesIn ? "opacity-100 scale-100" : "opacity-0 scale-50"
               }`}
             >
-              <span className="text-3xl leading-none">{r.emoji}</span>
-              <span className="text-[11px] font-medium text-[#1f2328] text-center leading-tight px-1">
+              <span className="text-6xl leading-none">{r.emoji}</span>
+              <span className="text-xs font-medium text-[#1f2328] text-center leading-tight">
                 {r.label}
               </span>
             </button>

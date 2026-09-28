@@ -2,22 +2,20 @@ export interface SmokeReasonDef {
   id: string;
   label: string;
   emoji: string;
-  color: string; // baloncuk arka plan rengi (pastel ton)
 }
 
 export const SMOKE_REASONS: SmokeReasonDef[] = [
-  { id: "stres", label: "Stres", emoji: "😰", color: "#fee2e2" },
-  { id: "keyif", label: "Keyif / Rahatlama", emoji: "😌", color: "#fef3c7" },
-  { id: "sosyal", label: "Sosyal", emoji: "👥", color: "#dbeafe" },
-  { id: "aliskanlik", label: "Alışkanlık", emoji: "☕", color: "#e7dfd7" },
-  { id: "sikinti", label: "Sıkıntı", emoji: "😐", color: "#e5e7eb" },
+  { id: "stres", label: "Stres", emoji: "😰" },
+  { id: "keyif", label: "Keyif / Rahatlama", emoji: "😌" },
+  { id: "sosyal", label: "Sosyal", emoji: "👥" },
+  { id: "aliskanlik", label: "Alışkanlık", emoji: "☕" },
+  { id: "sikinti", label: "Sıkıntı", emoji: "😐" },
 ];
 
 const UNSPECIFIED: SmokeReasonDef = {
   id: "belirtilmedi",
   label: "Belirtilmedi",
   emoji: "❔",
-  color: "#e5e7eb",
 };
 
 export function getReasonDef(id: string | null | undefined): SmokeReasonDef {
