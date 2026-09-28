@@ -29,7 +29,7 @@ jobs:
           # her tarayıcının kaynak kodunda zaten görünür durumdadır - gizli
           # değildir. Güvenlik, Firestore Security Rules ile sağlanır.
           VITE_FIREBASE_API_KEY: "AIzaSyA8QAnUE3bEGW0qw-0V84I4cdFF08CLaK4"
-          VITE_FIREBASE_AUTH_DOMAIN: "sigara-takip-b2f0a.firebaseapp.com"
+          VITE_FIREBASE_AUTH_DOMAIN: "sigara-takip-b2f0a.web.app"
           VITE_FIREBASE_PROJECT_ID: "sigara-takip-b2f0a"
           VITE_FIREBASE_STORAGE_BUCKET: "sigara-takip-b2f0a.firebasestorage.app"
           VITE_FIREBASE_MESSAGING_SENDER_ID: "842228984200"

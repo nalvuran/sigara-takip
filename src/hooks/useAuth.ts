@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { User } from "firebase/auth";
-import { subscribeAuthState } from "../services/authService";
+import { subscribeAuthState, completeRedirectSignIn } from "../services/authService";
 import { ensureUserDocument } from "../services/firestoreService";
 
 export function useAuth() {
@@ -8,6 +8,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    completeRedirectSignIn();
     const unsubscribe = subscribeAuthState(async (u) => {
       if (u) {
         await ensureUserDocument(u.uid);

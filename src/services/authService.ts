@@ -2,6 +2,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -21,8 +23,36 @@ export async function signUp(email: string, password: string) {
   await createUserWithEmailAndPassword(auth, email, password);
 }
 
+/**
+ * Mobil tarayıcılarda ve ana ekrana eklenmiş (standalone) uygulamada popup
+ * güvenilir çalışmaz (iOS Safari depolamayı bölümlendirir); bu ortamlarda aynı
+ * sayfada yönlendirmeli giriş kullanılır.
+ */
+function shouldUseRedirect(): boolean {
+  const ua = navigator.userAgent;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+  const isStandalone =
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as unknown as { standalone?: boolean }).standalone === true;
+  return isMobile || isStandalone;
+}
+
 export async function signInWithGoogle() {
-  await signInWithPopup(auth, new GoogleAuthProvider());
+  const provider = new GoogleAuthProvider();
+  if (shouldUseRedirect()) {
+    await signInWithRedirect(auth, provider);
+  } else {
+    await signInWithPopup(auth, provider);
+  }
+}
+
+/** Yönlendirmeli girişten dönüldüğünde sonucu tamamlar (hata olursa konsola yazar). */
+export async function completeRedirectSignIn() {
+  try {
+    await getRedirectResult(auth);
+  } catch (err) {
+    console.warn("Yönlendirmeli giriş tamamlanamadı:", err);
+  }
 }
 
 export async function logOut() {
