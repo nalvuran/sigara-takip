@@ -102,6 +102,14 @@ export function isLocalWeekend(epochMs: number): boolean {
   return day === "Sat" || day === "Sun";
 }
 
+/** Europe/Istanbul saatine göre gün adı (örn. "Pazartesi"). */
+export function toLocalWeekdayName(epochMs: number): string {
+  return new Intl.DateTimeFormat("tr-TR", {
+    timeZone: TIMEZONE,
+    weekday: "long",
+  }).format(new Date(epochMs));
+}
+
 /** Milisaniyeyi "X saat Y dakika" biçiminde okunabilir metne çevirir (canlı sayaç için). */
 export function formatElapsedSince(epochMs: number, nowMs: number): string {
   const diffMinutes = Math.max(0, Math.floor((nowMs - epochMs) / 60000));

@@ -24,6 +24,7 @@ import {
 } from "../logic/allowance";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
 import { calculateReasonBreakdown, buildReasonInsight } from "../logic/reasons";
+import { selectDailyInsight } from "../logic/insights";
 
 type FilterKey = "today" | "7d" | "30d" | "all";
 
@@ -55,6 +56,15 @@ export function StatsScreen() {
 
   const smokes = useSmokesRange(uid, fromDate, today);
   const ledgerEntries = useLedgerRange(uid, fromDate, today);
+
+  // Yorumlar, seçili filtreden bağımsız olarak TÜM zamanlardaki veriye bakar.
+  const allTimeFromDate = addDaysToDateString(today, -ALL_TIME_LOOKBACK_DAYS);
+  const allTimeSmokes = useSmokesRange(uid, allTimeFromDate, today);
+
+  const dailyInsight = useMemo(
+    () => selectDailyInsight(allTimeSmokes, today),
+    [allTimeSmokes, today]
+  );
 
   const costPerCigarette = settings
     ? calculateCostPerCigarette(settings.packagePrice, settings.cigarettesPerPack)
@@ -119,6 +129,20 @@ export function StatsScreen() {
   return (
     <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
       <h1 className="text-2xl font-bold mb-5">İstatistikler</h1>
+
+      <Card className="!p-5 mb-5">
+        <p className="text-xs text-[#6b7280] mb-2">💭 Bugünün yorumu</p>
+        {dailyInsight ? (
+          <p className="text-[15px] leading-relaxed text-[#1f2328]">
+            {dailyInsight.text}
+          </p>
+        ) : (
+          <p className="text-sm leading-relaxed text-[#6b7280]">
+            Henüz yeterli veri yok. Birkaç gün daha kayıt ve sebep girdikçe,
+            burada kendi örüntülerini yansıtan sorular belirecek.
+          </p>
+        )}
+      </Card>
 
       <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar">
         {FILTERS.map((f) => (
