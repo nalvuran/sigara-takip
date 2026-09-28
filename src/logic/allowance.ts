@@ -11,6 +11,8 @@
  * negatifse ertesi günün hakkından borç olarak düşülür.
  */
 
+import { addDaysToDateString } from "./dateUtils";
+
 export interface DayInput {
   date: string; // "YYYY-MM-DD"
   baseLimit: number; // o gün geçerli temel limit
@@ -165,4 +167,53 @@ export function formatMinutesAsDuration(totalMinutes: number): string {
   const m = mins % 60;
   if (h <= 0) return `${m}dk`;
   return `${h}s ${m}dk`;
+}
+
+export interface ChainDayInput {
+  baseLimit: number;
+  consumption: number;
+}
+
+/**
+ * Bir başlangıç gününden bitiş gününe kadar, ledger kaydı OLAN günler için hak
+ * zincirini yeniden hesaplar. Kural mevcut sistemle aynıdır: bir günün devreden
+ * hakkı, hemen bir önceki takvim gününün ledger kaydından gelir; o gün kaydı
+ * yoksa devreden 0'dır.
+ *
+ * @param days tarih -> {baseLimit, consumption}; startDate mutlaka içinde olmalı
+ * @param startingRemaining startDate'ten bir önceki günün remaining değeri (yoksa 0)
+ */
+export function recomputeLedgerChain(
+  startDate: string,
+  endDate: string,
+  days: Record<string, ChainDayInput>,
+  startingRemaining: number
+): DayResult[] {
+  const results: DayResult[] = [];
+  let prevRemaining: number | null = startingRemaining;
+  let cursor = startDate;
+  let guard = 0;
+
+  while (cursor <= endDate && guard < 5000) {
+    const day = days[cursor];
+    if (day) {
+      const previousRemaining = prevRemaining ?? 0;
+      const allowance = calculateDailyAllowance(day.baseLimit, previousRemaining);
+      const remaining = calculateRemainingAllowance(allowance, day.consumption);
+      results.push({
+        date: cursor,
+        baseLimit: day.baseLimit,
+        previousRemaining,
+        allowance,
+        consumption: day.consumption,
+        remaining,
+      });
+      prevRemaining = calculateRollover(remaining);
+    } else {
+      prevRemaining = null; // kayıt yok: zincir kopar, sonraki gün 0'dan başlar
+    }
+    cursor = addDaysToDateString(cursor, 1);
+    guard++;
+  }
+  return results;
 }

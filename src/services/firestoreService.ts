@@ -19,6 +19,8 @@ import type { UserSettings, SmokeRecord, DailyLedgerEntry } from "../types";
 import {
   calculateDailyAllowance,
   calculateRemainingAllowance,
+  recomputeLedgerChain,
+  resolveBaseLimitForDate,
 } from "../logic/allowance";
 import { toLocalDateString, addDaysToDateString } from "../logic/dateUtils";
 
@@ -326,4 +328,112 @@ export async function resetAllUserData(uid: string): Promise<void> {
   await deleteCollectionInBatches(uid, "smokes");
   await deleteCollectionInBatches(uid, "dailyLedger");
   await deleteCollectionInBatches(uid, "limitHistory");
+}
+
+// ---------- Geçmişe Manuel Sigara Ekleme ----------
+
+/** Geriye dönük eklemede izin verilen en fazla gün (tek transaction'ın yazma limiti için güvenli pay). */
+export const MAX_BACKFILL_DAYS = 365;
+
+/**
+ * Geçmiş bir zamana sigara ekler ve o günden bugüne kadar olan hak zincirini
+ * atomik olarak yeniden hesaplar (bir sigaranın eklenmesi sonraki günlerin
+ * hakkını da etkiler).
+ */
+export async function addManualSmoke(
+  uid: string,
+  timestampMs: number
+): Promise<{ id: string; localDate: string }> {
+  const now = Date.now();
+  if (timestampMs > now) {
+    throw new Error("Gelecek bir zaman seçilemez.");
+  }
+  const localDate = toLocalDateString(timestampMs);
+  const today = toLocalDateString(now);
+  if (localDate < addDaysToDateString(today, -MAX_BACKFILL_DAYS)) {
+    throw new Error(`En fazla ${MAX_BACKFILL_DAYS} gün öncesine kayıt eklenebilir.`);
+  }
+
+  // O gün ledger kaydı yoksa kullanılacak temel limit
+  const settingsSnap = await getDoc(doc(db, "users", uid));
+  const dailyLimit = settingsSnap.exists()
+    ? (settingsSnap.data() as UserSettings).dailyLimit
+    : 10;
+  const historySnap = await getDocs(collection(db, "users", uid, "limitHistory"));
+  const history = historySnap.docs.map((d) => ({
+    newLimit: d.data().newLimit as number,
+    effectiveFrom: d.data().effectiveFrom as string,
+  }));
+  const defaultBaseLimit = resolveBaseLimitForDate(localDate, dailyLimit, history);
+
+  // [localDate, bugün] aralığında ledger kaydı olan günler
+  const rangeSnap = await getDocs(
+    query(
+      collection(db, "users", uid, "dailyLedger"),
+      where("date", ">=", localDate),
+      where("date", "<=", today),
+      orderBy("date", "asc")
+    )
+  );
+  const datesToRead = Array.from(
+    new Set([localDate, today, ...rangeSnap.docs.map((d) => d.id)])
+  );
+
+  const smokeRef = doc(collection(db, "users", uid, "smokes"));
+
+  await runTransaction(db, async (tx) => {
+    const prevSnap = await tx.get(ledgerRef(uid, addDaysToDateString(localDate, -1)));
+    const snaps = await Promise.all(
+      datesToRead.map((d) => tx.get(ledgerRef(uid, d)))
+    );
+
+    const days: Record<string, { baseLimit: number; consumption: number }> = {};
+    const existed = new Set<string>();
+    snaps.forEach((snap, i) => {
+      if (snap.exists()) {
+        const e = snap.data() as DailyLedgerEntry;
+        days[datesToRead[i]] = { baseLimit: e.baseLimit, consumption: e.consumption };
+        existed.add(datesToRead[i]);
+      }
+    });
+
+    const target = days[localDate] ?? { baseLimit: defaultBaseLimit, consumption: 0 };
+    days[localDate] = { ...target, consumption: target.consumption + 1 };
+
+    const startingRemaining = prevSnap.exists()
+      ? (prevSnap.data() as DailyLedgerEntry).remaining
+      : 0;
+
+    const chain = recomputeLedgerChain(localDate, today, days, startingRemaining);
+    const stamp = Date.now();
+
+    tx.set(smokeRef, { timestamp: timestampMs, localDate, createdAt: stamp });
+
+    for (const r of chain) {
+      const ref = ledgerRef(uid, r.date);
+      if (existed.has(r.date)) {
+        tx.update(ref, {
+          previousRemaining: r.previousRemaining,
+          allowance: r.allowance,
+          consumption: r.consumption,
+          remaining: r.remaining,
+          updatedAt: stamp,
+        });
+      } else {
+        const entry: DailyLedgerEntry = {
+          date: r.date,
+          baseLimit: r.baseLimit,
+          previousRemaining: r.previousRemaining,
+          allowance: r.allowance,
+          consumption: r.consumption,
+          remaining: r.remaining,
+          isFinalized: r.date !== today,
+          updatedAt: stamp,
+        };
+        tx.set(ref, entry);
+      }
+    }
+  });
+
+  return { id: smokeRef.id, localDate };
 }

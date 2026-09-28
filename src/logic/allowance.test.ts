@@ -9,6 +9,7 @@ import {
   calculateSmokingIntervals,
   calculateAverageInterval,
   resolveBaseLimitForDate,
+  recomputeLedgerChain,
 } from "./allowance";
 
 describe("Hak/Devir Motoru - Zorunlu Testler (bölüm 24)", () => {
@@ -129,5 +130,55 @@ describe("Sigara aralıkları", () => {
   it("tek kayıt veya kayıt yoksa ortalama null döner", () => {
     expect(calculateAverageInterval([])).toBeNull();
     expect(calculateSmokingIntervals([123456])).toEqual([]);
+  });
+});
+
+describe("recomputeLedgerChain (geçmişe manuel ekleme sonrası zincir)", () => {
+  it("geçmiş güne eklenen bir sigara sonraki günlerin hakkını zincir halinde günceller", () => {
+    // Gün1: limit 10, 11 içildi (1 sigara sonradan eklendi) -> -1
+    // Gün2: 10 + (-1) = 9 hak, 5 içildi -> 4 kalır
+    // Gün3: 10 + 4 = 14 hak
+    const result = recomputeLedgerChain(
+      "2026-09-10",
+      "2026-09-12",
+      {
+        "2026-09-10": { baseLimit: 10, consumption: 11 },
+        "2026-09-11": { baseLimit: 10, consumption: 5 },
+        "2026-09-12": { baseLimit: 10, consumption: 0 },
+      },
+      0
+    );
+    expect(result[0].remaining).toBe(-1);
+    expect(result[1].allowance).toBe(9);
+    expect(result[1].remaining).toBe(4);
+    expect(result[2].allowance).toBe(14);
+  });
+
+  it("kaydı olmayan gün zinciri koparır (mevcut sistemle aynı kural)", () => {
+    const result = recomputeLedgerChain(
+      "2026-09-10",
+      "2026-09-12",
+      {
+        "2026-09-10": { baseLimit: 10, consumption: 8 },
+        // 11'i yok
+        "2026-09-12": { baseLimit: 10, consumption: 0 },
+      },
+      0
+    );
+    expect(result.length).toBe(2);
+    expect(result[1].date).toBe("2026-09-12");
+    expect(result[1].previousRemaining).toBe(0);
+    expect(result[1].allowance).toBe(10);
+  });
+
+  it("başlangıç gününün devreden hakkını startingRemaining'den alır", () => {
+    const result = recomputeLedgerChain(
+      "2026-09-10",
+      "2026-09-10",
+      { "2026-09-10": { baseLimit: 10, consumption: 4 } },
+      3
+    );
+    expect(result[0].allowance).toBe(13);
+    expect(result[0].remaining).toBe(9);
   });
 });

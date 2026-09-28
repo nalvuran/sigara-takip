@@ -70,6 +70,7 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 ## Aşama 3 — Tamamlananlar
 - **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
 - **Yorumlar**: İstatistikler ekranının üstünde günde 1 kez değişen, kullanıcının kendi verisinden üretilen yansıtıcı bir soru ("…bu sana tanıdık geliyor mu?"). Yargılamaz, öğüt vermez. Mantık: `src/logic/insights.ts` (test edilmiş).
+- **Geçmişe manuel ekleme**: Geçmiş ekranındaki "+ Ekle" ile unutulan bir sigara, geçmiş bir tarih/saat seçilerek (en fazla 365 gün geriye) eklenebilir. Ekleme, o günden bugüne kadar olan hak zincirini tek bir Firestore transaction'ında yeniden hesaplar. Mantık: `recomputeLedgerChain` (`src/logic/allowance.ts`, test edilmiş).
 - **Gelişmiş grafikler**: İstatistikler ekranına recharts ile günlük tüketim bar grafiği + limit referans çizgisi eklendi.
 - **İçme sebebi takibi**: 🚭 butonuna basınca alttan açılan bir sheet ile (opsiyonel) "Neden içtin?" sorulur — Stres / Keyif / Sosyal / Alışkanlık / Sıkıntı. İstatistikler'de sebep dağılımı ve nötr, salt bilgilendirici bir özet cümlesi ("En sık nedenin: ...") gösterilir. Mantık: `src/logic/reasons.ts` (test edilmiş). Uygulama hiçbir öneri/öğüt vermez, sadece örüntüyü gösterir.
 

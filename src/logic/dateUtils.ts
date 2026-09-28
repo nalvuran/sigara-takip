@@ -118,3 +118,31 @@ export function formatElapsedSince(epochMs: number, nowMs: number): string {
   if (h <= 0) return `${m} dakika önce`;
   return `${h} saat ${m} dakika önce`;
 }
+
+/**
+ * <input type="datetime-local"> için "YYYY-MM-DDTHH:mm" değeri (Europe/Istanbul).
+ */
+export function toLocalDateTimeInputValue(epochMs: number): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(epochMs));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  const hour = get("hour") === "24" ? "00" : get("hour");
+  return `${get("year")}-${get("month")}-${get("day")}T${hour}:${get("minute")}`;
+}
+
+/**
+ * datetime-local değerini Türkiye saati olarak yorumlayıp epoch ms döndürür.
+ * (Türkiye 2016'dan beri sabit UTC+3 kullanır, yaz saati uygulaması yoktur.)
+ */
+export function parseLocalDateTimeInput(value: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
+  const ms = new Date(`${value}:00+03:00`).getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
