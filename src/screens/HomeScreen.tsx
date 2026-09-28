@@ -5,10 +5,9 @@ import { useTodayLedger } from "../hooks/useTodayLedger";
 import { useSmokesForDate } from "../hooks/useSmokes";
 import { Card, GhostButton } from "../components/ui";
 import { ReasonSheet } from "../components/ReasonSheet";
-import { FilterChips } from "../components/FilterChips";
 import { StatsGrid } from "../components/StatsGrid";
 import { ConsumptionChart } from "../components/ConsumptionChart";
-import { useStatsData, type FilterKey } from "../hooks/useStatsData";
+import { useStatsData } from "../hooks/useStatsData";
 import { setSmokeReason } from "../services/firestoreService";
 import { calculateCostPerCigarette, calculateDailyCost } from "../logic/allowance";
 import { formatElapsedSince, toLocalTimeString } from "../logic/dateUtils";
@@ -20,8 +19,7 @@ export function HomeScreen() {
   const { today, entry, baseLimit, smoke, undo } = useTodayLedger(uid, settings);
   const smokes = useSmokesForDate(uid, today);
 
-  const [statsFilter, setStatsFilter] = useState<FilterKey>("7d");
-  const stats = useStatsData(uid, statsFilter);
+  const stats = useStatsData(uid, "all");
 
   const [busy, setBusy] = useState(false);
   const [showUndo, setShowUndo] = useState(false);
@@ -161,7 +159,7 @@ export function HomeScreen() {
       </div>
 
       <div className="mt-8">
-        <FilterChips value={statsFilter} onChange={setStatsFilter} />
+        <p className="text-xs text-[#6b7280] mb-3">Tüm zamanlar</p>
         <StatsGrid stats={stats} />
         <div className="mt-5">
           <ConsumptionChart data={stats.chartData} />
