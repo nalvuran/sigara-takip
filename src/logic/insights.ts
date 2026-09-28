@@ -19,9 +19,9 @@ import {
  *   - "azaltmalısın", "iyi gidiyorsun" gibi bir yön/değer yargısı içermez
  *   - bir tavsiye/öğüt vermez
  * Her zaman:
- *   - gözlemi nötr bir dille anlatır ("X, Y saatlerinde yoğunlaşıyor")
- *   - "bu sana tanıdık geliyor mu?" gibi kullanıcıyı kendi yorumuna davet
- *     eden bir soruyla biter
+ *   - önce gözlemi nötr, düz bir cümleyle söyler ("X, Y saatlerinde yoğunlaşıyor")
+ *   - ardından ayrı bir satırda, kullanıcıyı kendi içine bakmaya davet eden
+ *     kısa, açık uçlu bir soru sorar (evet/hayır cevabı gerektirmeyen)
  * Anlamlı olması için her örüntünün belirli bir minimum veri eşiği vardır;
  * eşik geçilmeden o örüntü hiç önerilmez (yanıltıcı erken çıkarım riski).
  */
@@ -32,9 +32,18 @@ export interface InsightSmoke {
   reason?: string | null;
 }
 
+/** Bir örüntü adayı: nötr bir gözlem + bu gözleme eşlik edebilecek düşündürücü sorular. */
 export interface Insight {
   id: string;
-  text: string;
+  observation: string;
+  questions: string[];
+}
+
+/** O gün gösterilecek nihai yorum: gözlem + (günün) tek sorusu. */
+export interface DailyInsight {
+  id: string;
+  observation: string;
+  question: string;
 }
 
 type Daypart = "gece" | "sabah" | "öğleden sonra" | "akşam";
@@ -77,7 +86,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
     if (topCount / list.length >= 0.6) {
       insights.push({
         id: `reason-daypart-${reason.id}`,
-        text: `${reason.label} kaynaklı sigaraların çoğu ${topBucket} saatlerinde — bu sana tanıdık geliyor mu?`,
+        observation: `${reason.label} kaynaklı sigaraların çoğu ${topBucket} saatlerinde.`,
+        questions: [
+          "O saatlerde günün içinde neler oluyor?",
+          "O anlarda sigara sana ne veriyor gibi hissediyorsun?",
+          "O saatlerde sana ne iyi gelirdi?",
+        ],
       });
     }
   }
@@ -91,7 +105,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
     if (weekendCount / list.length >= 0.5) {
       insights.push({
         id: `reason-weekend-${reason.id}`,
-        text: `${reason.label} kaynaklı sigaraların büyük kısmı hafta sonlarına denk geliyor — bu sana tanıdık geliyor mu?`,
+        observation: `${reason.label} kaynaklı sigaraların büyük kısmı hafta sonlarına denk geliyor.`,
+        questions: [
+          "Hafta sonlarını hafta içinden ayıran ne?",
+          "O günlerde kimlerle, nerede oluyorsun?",
+          "O günler sana nasıl hissettiriyor?",
+        ],
       });
     }
   }
@@ -109,7 +128,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
         const def = getReasonDef(topId);
         insights.push({
           id: "dominant-reason",
-          text: `En sık işaretlediğin neden "${def.label}" — bu senin için ne ifade ediyor?`,
+          observation: `En sık işaretlediğin neden "${def.label}".`,
+          questions: [
+            "Bunun altında ne yatıyor olabilir?",
+            "Bu neden hayatının başka hangi yerlerinde karşına çıkıyor?",
+            "Bu ihtiyaca başka neler cevap verebilir?",
+          ],
         });
       }
     }
@@ -128,7 +152,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
     if (topCount >= avg * 1.5 && topCount >= 5) {
       insights.push({
         id: "weekday-cluster",
-        text: `Sigaraların ${topDay} günlerinde daha sık kümelenmiş görünüyor — bu sana tanıdık geliyor mu?`,
+        observation: `Sigaraların ${topDay} günlerinde daha sık kümelenmiş görünüyor.`,
+        questions: [
+          "O günü diğer günlerden ayıran ne?",
+          "O günün akışında neler var?",
+          "O gün içinden neler geçiyor?",
+        ],
       });
     }
   }
@@ -150,7 +179,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
       if (avgHour <= 9) {
         insights.push({
           id: "first-smoke-early",
-          text: `Günün ilk sigarası genelde saat ${avgHour}:00 civarında oluyor — bu sana tanıdık geliyor mu?`,
+          observation: `Günün ilk sigarası genelde saat ${avgHour}:00 civarında oluyor.`,
+          questions: [
+            "Güne başlarken o anda ne arıyorsun?",
+            "Uyandığında ilk hissettiğin şey ne oluyor?",
+            "Sabahın o anında sigara sana ne sağlıyor?",
+          ],
         });
       }
     }
@@ -179,12 +213,22 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
         if (diffRatio <= -0.3) {
           insights.push({
             id: `interval-short-${reason.id}`,
-            text: `${reason.label} kaynaklı sigaralar arasında geçen süre, genel ortalamana göre belirgin şekilde kısa — bu sana tanıdık geliyor mu?`,
+            observation: `${reason.label} kaynaklı sigaralar arasında geçen süre, genel ortalamana göre belirgin şekilde kısa.`,
+            questions: [
+              "O anlarda içinde neler hızlanıyor?",
+              "Hızlanan şey bir ihtiyaç mı, bir alışkanlık mı?",
+              "O durumlar seni nasıl bir hâle getiriyor?",
+            ],
           });
         } else if (diffRatio >= 0.3) {
           insights.push({
             id: `interval-long-${reason.id}`,
-            text: `${reason.label} kaynaklı sigaralar arasında geçen süre, genel ortalamana göre belirgin şekilde uzun — bu sana tanıdık geliyor mu?`,
+            observation: `${reason.label} kaynaklı sigaralar arasında geçen süre, genel ortalamana göre belirgin şekilde uzun.`,
+            questions: [
+              "O anlarda seni ne sakin tutuyor?",
+              "O durumlarda sigarasız geçen zamanı mümkün kılan ne?",
+              "Orada işleyen bir şey varsa, o ne olabilir?",
+            ],
           });
         }
       }
@@ -200,9 +244,12 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
     if (longest !== null && longest >= 360 && total >= MIN_FOR_LONGEST_GAP) {
       insights.push({
         id: "longest-gap",
-        text: `En uzun sigarasız süren ${formatMinutesAsDuration(
-          longest
-        )} sürmüş — o sırada neler farklıydı, hatırlıyor musun?`,
+        observation: `En uzun sigarasız süren ${formatMinutesAsDuration(longest)} sürmüş.`,
+        questions: [
+          "O sırada neler farklıydı?",
+          "O saatlerde ne yapıyordun, kiminleydin?",
+          "O süre sana nasıl hissettirdi?",
+        ],
       });
     }
   }
@@ -210,13 +257,10 @@ export function collectInsights(smokes: InsightSmoke[]): Insight[] {
   return insights;
 }
 
-/** Basit, deterministik bir string hash (gün başına sabit seçim için). */
-function hashString(input: string): number {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-  }
-  return hash;
+/** "YYYY-MM-DD" -> 1970'ten beri geçen gün sayısı (ardışık günler ardışık sayılar verir). */
+function dayNumber(date: string): number {
+  const [y, m, d] = date.split("-").map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
 }
 
 /**
@@ -228,12 +272,18 @@ function hashString(input: string): number {
 export function selectDailyInsight(
   smokes: InsightSmoke[],
   today: string
-): Insight | null {
+): DailyInsight | null {
   const candidates = collectInsights(smokes).sort((a, b) =>
     a.id < b.id ? -1 : a.id > b.id ? 1 : 0
   );
   if (candidates.length === 0) return null;
 
-  const index = hashString(today) % candidates.length;
-  return candidates[index];
+  // Ardışık günlerde adaylar sırayla döner; aynı aday tekrar geldiğinde
+  // bir sonraki soru gösterilir. Aynı gün her cihazda aynı sonucu verir.
+  const day = dayNumber(today);
+  const chosen = candidates[day % candidates.length];
+  const question =
+    chosen.questions[Math.floor(day / candidates.length) % chosen.questions.length];
+
+  return { id: chosen.id, observation: chosen.observation, question };
 }

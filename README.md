@@ -69,7 +69,7 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 
 ## Aşama 3 — Tamamlananlar
 - **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
-- **Yorumlar**: İstatistikler ekranının üstünde günde 1 kez değişen, kullanıcının kendi verisinden üretilen yansıtıcı bir soru ("…bu sana tanıdık geliyor mu?"). Yargılamaz, öğüt vermez. Mantık: `src/logic/insights.ts` (test edilmiş).
+- **Yorumlar**: Ayna ekranının üstünde günde 1 kez değişen bir kart: kullanıcının kendi verisinden çıkan nötr bir gözlem cümlesi ve altında ayrı satırda, kişiyi kendi içine bakmaya çağıran kısa, açık uçlu bir soru. Yargılamaz, öğüt vermez. Adaylar ve sorular ardışık günlerde sırayla döner. Mantık: `src/logic/insights.ts` (test edilmiş).
 - **Geçmişe manuel ekleme**: Geçmiş ekranındaki "+ Ekle" ile unutulan bir sigara, geçmiş bir tarih/saat seçilerek (en fazla 365 gün geriye) eklenebilir. Ekleme, o günden bugüne kadar olan hak zincirini tek bir Firestore transaction'ında yeniden hesaplar. Her kaydın yanındaki çöp kutusu simgesiyle geçmiş kayıtlar onay sorularak silinebilir; silme de aynı şekilde hak zincirini transaction içinde yeniden hesaplar. Mantık: `recomputeLedgerChain` (`src/logic/allowance.ts`, test edilmiş).
 - **Ekran düzeni**: Ana Sayfa'da sayaç, 🚭 butonu, zaman filtreli istatistik kartları ve günlük tüketim grafiği bulunur; "Ayna" ekranı (eski adıyla İstatistikler) yorum ve örüntü ekranıdır (Bugünün yorumu + emojili "Neden içtin?" dağılımı).
 - **Gelişmiş grafikler**: İstatistikler ekranına recharts ile günlük tüketim bar grafiği + limit referans çizgisi eklendi.

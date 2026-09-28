@@ -32,8 +32,9 @@ describe("collectInsights", () => {
     const result = collectInsights(smokes);
     const found = result.find((r) => r.id === "reason-daypart-stres");
     expect(found).toBeDefined();
-    expect(found!.text).toContain("akşam");
-    expect(found!.text).toContain("?");
+    expect(found!.observation).toContain("akşam");
+    expect(found!.observation).not.toContain("?");
+    expect(found!.questions.length).toBeGreaterThan(0);
   });
 
   it("dağınık saatlerde (belirgin çoğunluk yokken) daypart yorumu üretmez", () => {
@@ -69,7 +70,7 @@ describe("collectInsights", () => {
     const result = collectInsights(smokes);
     const dominant = result.find((r) => r.id === "dominant-reason");
     expect(dominant).toBeDefined();
-    expect(dominant!.text.toLowerCase()).toContain("stres");
+    expect(dominant!.observation.toLowerCase()).toContain("stres");
   });
 
   it("en uzun sigarasız süreyi (>=6 saat, >=10 kayıt) yakalar", () => {
@@ -81,21 +82,31 @@ describe("collectInsights", () => {
     const result = collectInsights(smokes);
     const gap = result.find((r) => r.id === "longest-gap");
     expect(gap).toBeDefined();
-    expect(gap!.text).toContain("?");
+    expect(gap!.observation).toContain("sigarasız süren");
   });
 
-  it("hiçbir yorum metni yönlendirici/yargılayıcı ifade içermiyor (tasarım ilkesi kontrolü)", () => {
+  it("hiçbir gözlem/soru yönlendirici ya da yargılayıcı ifade içermiyor (tasarım ilkesi)", () => {
+    // Birden çok örüntü türünü tetikleyecek zengin bir veri seti
     const smokes = [
       ...Array.from({ length: 6 }, (_, i) => mk(`2026-09-0${i + 1}`, 20, "stres")),
+      ...Array.from({ length: 6 }, (_, i) => mk(`2026-09-1${i}`, 7, "aliskanlik")),
     ];
     const result = collectInsights(smokes);
+    expect(result.length).toBeGreaterThan(0);
+    const banned = ["azalt", "bırak", "yapmalısın", "iyi gidiyorsun", "kötü", "başardın"];
     for (const insight of result) {
-      const t = insight.text.toLowerCase();
-      expect(t).not.toContain("azalt");
-      expect(t).not.toContain("bırak");
-      expect(t).not.toContain("yapmalısın");
-      expect(t).not.toContain("iyi gidiyorsun");
-      expect(t.endsWith("?")).toBe(true);
+      const obs = insight.observation.toLowerCase();
+      expect(obs.endsWith(".")).toBe(true);
+      expect(obs).not.toContain("?");
+      for (const b of banned) expect(obs).not.toContain(b);
+      expect(insight.questions.length).toBeGreaterThanOrEqual(2);
+      for (const q of insight.questions) {
+        expect(q.endsWith("?")).toBe(true);
+        const t = q.toLowerCase();
+        for (const b of banned) expect(t).not.toContain(b);
+        // Evet/hayır kalıbına düşmesin
+        expect(t).not.toContain("tanıdık geliyor mu");
+      }
     }
   });
 });
@@ -119,9 +130,25 @@ describe("selectDailyInsight", () => {
     expect(a).toEqual(b);
   });
 
-  it("tek aday varken hangi gün olursa olsun o adayı döner", () => {
+  it("tek aday varken hangi gün olursa olsun aynı gözlemi döner", () => {
     const a = selectDailyInsight(smokes, "2026-09-20");
     const b = selectDailyInsight(smokes, "2026-09-21");
-    expect(a).toEqual(b); // çünkü tek aday var, hash ne olursa olsun aynı index (0 % 1 = 0)
+    expect(a!.id).toBe(b!.id);
+    expect(a!.observation).toBe(b!.observation);
+  });
+
+  it("sonuç bir gözlem ve tek bir soru içerir; soru ? ile biter", () => {
+    const r = selectDailyInsight(smokes, "2026-09-20")!;
+    expect(r.observation.length).toBeGreaterThan(0);
+    expect(r.question.endsWith("?")).toBe(true);
+  });
+
+  it("farklı günlerde aynı örüntü için farklı sorular çıkabilir (çeşitlilik)", () => {
+    const asked = new Set<string>();
+    for (let d = 1; d <= 28; d++) {
+      const day = `2026-10-${String(d).padStart(2, "0")}`;
+      asked.add(selectDailyInsight(smokes, day)!.question);
+    }
+    expect(asked.size).toBeGreaterThan(1);
   });
 });

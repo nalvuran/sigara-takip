@@ -36,7 +36,14 @@ export function StatsScreen() {
       <Card className="!p-5 mb-5">
         <p className="text-xs text-[#6b7280] mb-2">💭 Bugünün yorumu</p>
         {dailyInsight ? (
-          <p className="text-[15px] leading-relaxed text-[#1f2328]">{dailyInsight.text}</p>
+          <>
+            <p className="text-[15px] leading-relaxed text-[#1f2328]">
+              {dailyInsight.observation}
+            </p>
+            <p className="text-[15px] leading-relaxed font-medium text-[#16a34a] mt-3">
+              {dailyInsight.question}
+            </p>
+          </>
         ) : (
           <p className="text-sm leading-relaxed text-[#6b7280]">
             Henüz yeterli veri yok. Birkaç gün daha kayıt ve sebep girdikçe, burada kendi
