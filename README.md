@@ -61,23 +61,6 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
 > adım çözümü (aynı senaryo için sonuç 15) birbiriyle çelişiyordu. Kullanıcıyla
 > netleştirildi: **doğru sonuç 15**, formül ve testler buna göre doğrulandı.
 
-## Otomatik Deploy (GitHub Actions)
-`main` dalına her push'ta `.github/workflows/firebase-deploy.yml` otomatik olarak
-testleri çalıştırır, build alır ve **Firebase Hosting'e** deploy eder. Gerekli
-secret: repo Settings → Secrets and variables → Actions altında
-`FIREBASE_SERVICE_ACCOUNT` (Firebase Console → Project settings → Service
-accounts → Generate new private key ile alınan JSON'ın tamamı). Ayrıca build
-adımı için `VITE_FIREBASE_*` değerleri workflow dosyasının içinde doğrudan
-tanımlı (bunlar Firebase'in istemci tarafı config'i, gizli değildir).
-
-**Not:** Firestore güvenlik kuralları (`firestore.rules`) ve indeksler otomatik
-deploy edilmiyor — servis hesabının bu işlem için ek bir Google Cloud IAM rolüne
-(Firebase Rules Admin) ihtiyacı var ve bu tekrarlayan sorunlara yol açtığı için
-workflow'dan çıkarıldı. `firestore.rules` değiştiğinde elle deploy et:
-```bash
-firebase deploy --only firestore:rules,firestore:indexes
-```
-
 ## Bilinen sınırlamalar / sonraki adımlar
 - Build boyutu ~1.36 MB (recharts eklenince büyüdü) — istenirse code-splitting ile küçültülebilir, acil değil.
 - `dailyLedger` kayıtları uygulama açıldığında proaktif olarak oluşturulur;
@@ -86,16 +69,12 @@ firebase deploy --only firestore:rules,firestore:indexes
 
 ## Aşama 3 — Tamamlananlar
 - **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
-- **Başarılar**: 21 rozet, 4 kategori (Sadakat, Farkındalık, Keşif, Eğlenceli). Tasarım ilkesi: hiçbiri azaltma/tasarruf/hedef performansı ölçmez — sadece uygulamayla ve kendi verinle ilişkini nötr biçimde yansıtır. Mantık: `src/logic/achievements.ts` (test edilmiş, kod seviyesinde "TL/limit/hedef geçmeyecek" garantisi bir testle korunuyor).
+- **Yorumlar**: İstatistikler ekranının üstünde günde 1 kez değişen, kullanıcının kendi verisinden üretilen yansıtıcı bir soru ("…bu sana tanıdık geliyor mu?"). Yargılamaz, öğüt vermez. Mantık: `src/logic/insights.ts` (test edilmiş).
 - **Gelişmiş grafikler**: İstatistikler ekranına recharts ile günlük tüketim bar grafiği + limit referans çizgisi eklendi.
 - **İçme sebebi takibi**: 🚭 butonuna basınca alttan açılan bir sheet ile (opsiyonel) "Neden içtin?" sorulur — Stres / Keyif / Sosyal / Alışkanlık / Sıkıntı. İstatistikler'de sebep dağılımı ve nötr, salt bilgilendirici bir özet cümlesi ("En sık nedenin: ...") gösterilir. Mantık: `src/logic/reasons.ts` (test edilmiş). Uygulama hiçbir öneri/öğüt vermez, sadece örüntüyü gösterir.
 
 ## Kaldırılan özellikler (bilinçli tasarım kararı)
 - **Hedef sistemi** tamamen kaldırıldı — kullanıcıyı azaltmaya yönlendiren bir "hedef/ilerleme" çerçevesi, uygulamanın yargısız-ayna felsefesiyle çelişiyordu.
 - **"İçilmeyen sigaraların değeri" (TL) kartı** kaldırıldı (Ana Sayfa ve İstatistikler) — bu hesap otomatik olarak "az içmek = kazanç" mesajı veriyordu. Sadece nötr "bugünkü/toplam harcama" bilgisi kaldı.
-- Eski "streak" (limit altında kalma serisi) banner'ı da aynı gerekçeyle kaldırıldı; performans ölçen rozetler (savings_*, streak_*) yerine yukarıdaki nötr 21 rozetle değiştirildi.
+- **Başarılar (rozet) sistemi** kaldırıldı — bazı rozetler sigara içmeyi ilerleme gibi gösteriyordu; farkındalık işini Yorumlar bölümü üstleniyor. Eski `users/{uid}/meta/flags` kayıtları Firestore'da zararsız şekilde kalabilir.
 
-Yeni Firestore koleksiyonu (`users/{uid}/meta/flags` — başarılar için hafif kullanım bayrakları) için güvenlik kuralı `firestore.rules`'a eklendi — canlıya almadan önce tekrar deploy edilmeli:
-```bash
-firebase deploy --only firestore:rules,hosting
-```

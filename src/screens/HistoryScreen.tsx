@@ -1,7 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useSmokesRange } from "../hooks/useSmokes";
-import { setFlag } from "../services/firestoreService";
 import { Card } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString, toLocalDayHeading, toLocalTimeString } from "../logic/dateUtils";
 import { getReasonDef } from "../logic/reasons";
@@ -14,10 +13,6 @@ export function HistoryScreen() {
   const fromDate = addDaysToDateString(todayLocalDateString(), -RANGE_DAYS);
   const toDate = todayLocalDateString();
   const smokes = useSmokesRange(uid, fromDate, toDate);
-
-  useEffect(() => {
-    if (uid) setFlag(uid, "hasViewedHistory");
-  }, [uid]);
 
   const groups = useMemo(() => {
     const map = new Map<string, typeof smokes>();

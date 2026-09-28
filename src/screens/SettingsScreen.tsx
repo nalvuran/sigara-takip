@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import {
   updateUserSettings,
   changeDailyLimit,
   resetAllUserData,
-  setFlag,
 } from "../services/firestoreService";
 import { logOut } from "../services/authService";
 import { Card, PrimaryButton, GhostButton, DangerButton } from "../components/ui";
@@ -24,10 +23,6 @@ export function SettingsScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [resetting, setResetting] = useState(false);
-
-  useEffect(() => {
-    if (uid) setFlag(uid, "hasViewedSettings");
-  }, [uid]);
 
   if (!settings) {
     return (

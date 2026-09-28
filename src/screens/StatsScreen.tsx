@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -13,7 +13,6 @@ import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useSmokesRange } from "../hooks/useSmokes";
 import { useLedgerRange } from "../hooks/useLedgerRange";
-import { setFlag } from "../services/firestoreService";
 import { Card } from "../components/ui";
 import {
   calculateCostPerCigarette,
@@ -42,10 +41,6 @@ export function StatsScreen() {
   const uid = user?.uid ?? null;
   const settings = useUserSettings(uid);
   const [filter, setFilter] = useState<FilterKey>("7d");
-
-  useEffect(() => {
-    if (uid) setFlag(uid, "hasViewedStats");
-  }, [uid]);
 
   const today = todayLocalDateString();
   const activeFilter = FILTERS.find((f) => f.key === filter)!;

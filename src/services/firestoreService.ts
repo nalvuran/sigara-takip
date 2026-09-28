@@ -254,7 +254,6 @@ export async function undoSmoke(uid: string, smokeId: string): Promise<void> {
     }
   });
 
-  await setFlag(uid, "hasUsedUndo");
 }
 
 /**
@@ -268,7 +267,6 @@ export async function setSmokeReason(
 ): Promise<void> {
   const smokeRef = doc(db, "users", uid, "smokes", smokeId);
   await updateDoc(smokeRef, { reason });
-  await setFlag(uid, "hasSetReason");
 }
 
 export function subscribeSmokesForDate(
@@ -328,32 +326,4 @@ export async function resetAllUserData(uid: string): Promise<void> {
   await deleteCollectionInBatches(uid, "smokes");
   await deleteCollectionInBatches(uid, "dailyLedger");
   await deleteCollectionInBatches(uid, "limitHistory");
-}
-
-// ---------- Kullanıcı Bayrakları (Başarılar için) ----------
-// Tek seferlik olayları işaretlemek için hafif bir doküman: bir ekranı ilk
-// kez açma, ilk kez Geri Al kullanma, ilk kez sebep seçme gibi.
-
-function flagsRef(uid: string) {
-  return doc(db, "users", uid, "meta", "flags");
-}
-
-export function subscribeFlags(
-  uid: string,
-  callback: (flags: Record<string, boolean>) => void
-) {
-  return onSnapshot(flagsRef(uid), (snap) => {
-    callback(snap.exists() ? (snap.data() as Record<string, boolean>) : {});
-  });
-}
-
-export async function setFlag(uid: string, name: string): Promise<void> {
-  try {
-    await setDoc(flagsRef(uid), { [name]: true }, { merge: true });
-  } catch (err) {
-    // Başarı rozetleri ikincil bir özellik; buradaki bir hata (örn. henüz
-    // deploy edilmemiş güvenlik kuralı) asla ana akışı (sigara ekleme, sebep
-    // kaydetme, geri alma) bozmamalı. Sessizce yut, sadece konsola logla.
-    console.warn(`setFlag(${name}) başarısız oldu, görmezden geliniyor:`, err);
-  }
 }
