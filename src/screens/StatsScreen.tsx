@@ -40,7 +40,7 @@ export function StatsScreen() {
         ) : (
           <p className="text-sm leading-relaxed text-[#6b7280]">
             Henüz yeterli veri yok. Birkaç gün daha kayıt ve sebep girdikçe, burada kendi
-            örüntülerini yansıtan sorular belirecek.
+            örüntülerini yansıtan yorumlar belirecek.
           </p>
         )}
       </Card>
