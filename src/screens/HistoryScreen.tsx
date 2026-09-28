@@ -4,8 +4,11 @@ import { useSmokesRange } from "../hooks/useSmokes";
 import { Card, PrimaryButton } from "../components/ui";
 import { ManualAddSheet } from "../components/ManualAddSheet";
 import { ReasonSheet } from "../components/ReasonSheet";
+import { DeleteConfirmSheet } from "../components/DeleteConfirmSheet";
+import type { SmokeRecord } from "../types";
 import {
   addManualSmoke,
+  deleteSmokeRecord,
   setSmokeReason,
   MAX_BACKFILL_DAYS,
 } from "../services/firestoreService";
@@ -49,6 +52,36 @@ export function HistoryScreen() {
       );
     } finally {
       setManualBusy(false);
+    }
+  }
+
+  const [deleteTarget, setDeleteTarget] = useState<SmokeRecord | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDeleteConfirm() {
+    if (!uid || !deleteTarget) return;
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      const result = await deleteSmokeRecord(uid, deleteTarget.id);
+      const ts = deleteTarget.timestamp;
+      setDeleteTarget(null);
+      if (result) {
+        setNotice(
+          result.localDate === todayLocalDateString()
+            ? "Kayıt silindi. Bugünün toplamı güncellendi."
+            : `Kayıt silindi. ${toLocalDayHeading(ts)} gününün toplamı güncellendi, sonraki günlerin hakkı buna göre yeniden hesaplandı.`
+        );
+      }
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Kayıt silinemedi, lütfen tekrar dene."
+      );
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -128,6 +161,18 @@ export function HistoryScreen() {
                       {getReasonDef(s.reason).label}
                     </span>
                   )}
+                  <button
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteTarget(s);
+                    }}
+                    aria-label="Kaydı sil"
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-[#9ca3af] active:bg-[#f1f2f4] ${
+                      s.reason ? "" : "ml-auto"
+                    }`}
+                  >
+                    🗑
+                  </button>
                 </div>
               ))}
             </Card>
@@ -142,6 +187,21 @@ export function HistoryScreen() {
         maxBackDays={MAX_BACKFILL_DAYS}
         onSubmit={handleManualSubmit}
         onClose={() => setManualOpen(false)}
+      />
+
+      <DeleteConfirmSheet
+        open={deleteTarget !== null}
+        busy={deleteBusy}
+        error={deleteError}
+        summary={
+          deleteTarget
+            ? `${toLocalDayHeading(deleteTarget.timestamp)} · ${toLocalTimeString(
+                deleteTarget.timestamp
+              )}${deleteTarget.reason ? " · " + getReasonDef(deleteTarget.reason).label : ""}`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
       />
 
       <ReasonSheet

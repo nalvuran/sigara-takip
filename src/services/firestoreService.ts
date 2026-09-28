@@ -437,3 +437,84 @@ export async function addManualSmoke(
 
   return { id: smokeRef.id, localDate };
 }
+
+// ---------- Geçmişten Sigara Silme ----------
+
+/**
+ * Bir sigara kaydını (herhangi bir geçmiş gün) siler ve o günden bugüne kadar
+ * olan hak zincirini atomik olarak yeniden hesaplar. Kayıt zaten silinmişse
+ * (ör. başka cihazdan) sessizce çıkar.
+ */
+export async function deleteSmokeRecord(
+  uid: string,
+  smokeId: string
+): Promise<{ localDate: string } | null> {
+  const smokeRef = doc(db, "users", uid, "smokes", smokeId);
+  const preSnap = await getDoc(smokeRef);
+  if (!preSnap.exists()) return null;
+
+  const localDate = (preSnap.data() as SmokeRecord).localDate;
+  const today = toLocalDateString(Date.now());
+  if (localDate < addDaysToDateString(today, -MAX_BACKFILL_DAYS)) {
+    throw new Error(`En fazla ${MAX_BACKFILL_DAYS} gün öncesine ait kayıt silinebilir.`);
+  }
+
+  const rangeSnap = await getDocs(
+    query(
+      collection(db, "users", uid, "dailyLedger"),
+      where("date", ">=", localDate),
+      where("date", "<=", today),
+      orderBy("date", "asc")
+    )
+  );
+  const datesToRead = Array.from(
+    new Set([localDate, today, ...rangeSnap.docs.map((d) => d.id)])
+  );
+
+  let deleted = false;
+
+  await runTransaction(db, async (tx) => {
+    const smokeSnap = await tx.get(smokeRef);
+    if (!smokeSnap.exists()) return; // zaten silinmiş
+
+    const prevSnap = await tx.get(ledgerRef(uid, addDaysToDateString(localDate, -1)));
+    const snaps = await Promise.all(datesToRead.map((d) => tx.get(ledgerRef(uid, d))));
+
+    const days: Record<string, { baseLimit: number; consumption: number }> = {};
+    snaps.forEach((snap, i) => {
+      if (snap.exists()) {
+        const e = snap.data() as DailyLedgerEntry;
+        days[datesToRead[i]] = { baseLimit: e.baseLimit, consumption: e.consumption };
+      }
+    });
+
+    tx.delete(smokeRef);
+    deleted = true;
+
+    // O günün ledger kaydı yoksa düzeltilecek bir zincir de yok
+    if (!days[localDate]) return;
+
+    days[localDate] = {
+      ...days[localDate],
+      consumption: Math.max(0, days[localDate].consumption - 1),
+    };
+
+    const startingRemaining = prevSnap.exists()
+      ? (prevSnap.data() as DailyLedgerEntry).remaining
+      : 0;
+
+    const chain = recomputeLedgerChain(localDate, today, days, startingRemaining);
+    const stamp = Date.now();
+    for (const r of chain) {
+      tx.update(ledgerRef(uid, r.date), {
+        previousRemaining: r.previousRemaining,
+        allowance: r.allowance,
+        consumption: r.consumption,
+        remaining: r.remaining,
+        updatedAt: stamp,
+      });
+    }
+  });
+
+  return deleted ? { localDate } : null;
+}

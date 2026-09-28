@@ -182,3 +182,21 @@ describe("recomputeLedgerChain (geçmişe manuel ekleme sonrası zincir)", () =>
     expect(result[0].remaining).toBe(9);
   });
 });
+
+describe("recomputeLedgerChain (kayıt silme sonrası zincir)", () => {
+  it("geçmiş bir günden sigara silinince sonraki günlerin hakkı artar", () => {
+    // Gün1: limit 10, 10 içilmişti; biri silinince 9 -> 1 kalır
+    // Gün2: 10 + 1 = 11 hak (silmeden önce 10'du)
+    const result = recomputeLedgerChain(
+      "2026-09-10",
+      "2026-09-11",
+      {
+        "2026-09-10": { baseLimit: 10, consumption: 9 },
+        "2026-09-11": { baseLimit: 10, consumption: 0 },
+      },
+      0
+    );
+    expect(result[0].remaining).toBe(1);
+    expect(result[1].allowance).toBe(11);
+  });
+});
