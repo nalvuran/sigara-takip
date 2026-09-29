@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUserSettings } from "./useUserSettings";
 import { useSmokesRange } from "./useSmokes";
 import { useLedgerRange } from "./useLedgerRange";
@@ -40,6 +40,16 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
     ? calculateCostPerCigarette(settings.packagePrice, settings.cigarettesPerPack)
     : 0;
 
+  // "En uzun sigarasız süre", son sigaradan bu yana geçen ve henüz bir
+  // sonraki sigarayla "kapanmamış" olan süreyi de aday olarak görebilsin diye
+  // dakikada bir tazelenir (aksi halde yalnızca iki KAYITLI sigara arasındaki
+  // geçmiş boşluklara bakar, hâlâ süren güncel boşluğu asla göremezdi).
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
   return useMemo(() => {
     const byDay = new Map<string, number>();
     for (const s of smokes) {
@@ -65,10 +75,25 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
       allIntervals = allIntervals.concat(calculateSmokingIntervals(list));
     }
 
-    const sortedTimestamps = [...smokes]
-      .sort((a, b) => a.timestamp - b.timestamp)
-      .map((s) => s.timestamp);
-    const overnightIntervals = calculateSmokingIntervals(sortedTimestamps);
+    const sortedSmokes = [...smokes].sort((a, b) => a.timestamp - b.timestamp);
+    const lastSmoke = sortedSmokes[sortedSmokes.length - 1] as
+      | (typeof sortedSmokes)[number]
+      | undefined;
+    const openGapMinutes = lastSmoke ? (now - lastSmoke.timestamp) / 60000 : null;
+
+    // Gece dahil (gerçek) versiyon: açık boşluk her zaman aday olarak eklenir.
+    const overnightIntervals = calculateSmokingIntervals(
+      sortedSmokes.map((s) => s.timestamp)
+    );
+    const overnightWithOpenGap =
+      openGapMinutes !== null ? [...overnightIntervals, openGapMinutes] : overnightIntervals;
+
+    // Günlük bazda versiyon: açık boşluk yalnızca son sigara BUGÜNe aitse eklenir
+    // (dünden bugüne geçmişse zaten "gece dahil" tarafın işi).
+    const dayOnlyWithOpenGap =
+      lastSmoke && lastSmoke.localDate === today && openGapMinutes !== null
+        ? [...allIntervals, openGapMinutes]
+        : allIntervals;
 
     const totalCost = ledgerEntries.reduce(
       (sum, e) => sum + e.consumption * costPerCigarette,
@@ -96,12 +121,12 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
       dailyMin,
       averageInterval: calculateAverageInterval(allIntervals),
       averageIntervalOvernight: calculateAverageInterval(overnightIntervals),
-      longestGap: calculateLongestSmokeFreeInterval(allIntervals),
-      longestGapOvernight: calculateLongestSmokeFreeInterval(overnightIntervals),
+      longestGap: calculateLongestSmokeFreeInterval(dayOnlyWithOpenGap),
+      longestGapOvernight: calculateLongestSmokeFreeInterval(overnightWithOpenGap),
       totalCost,
       chartData,
       reasonBreakdown,
       reasonInsight,
     };
-  }, [smokes, ledgerEntries, costPerCigarette]);
+  }, [smokes, ledgerEntries, costPerCigarette, now, today]);
 }
