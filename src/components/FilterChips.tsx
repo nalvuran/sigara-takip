@@ -14,7 +14,7 @@ export function FilterChips({
           key={f.key}
           onClick={() => onChange(f.key)}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            value === f.key ? "bg-[#16a34a] text-white" : "bg-[#f1f2f4] text-[#1f2328]"
+            value === f.key ? "bg-[var(--accent)] text-white" : "bg-[var(--surface-2)] text-[var(--ink)]"
           }`}
         >
           {f.label}

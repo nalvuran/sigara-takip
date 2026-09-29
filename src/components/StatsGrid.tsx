@@ -35,8 +35,8 @@ export function StatsGrid({ stats }: { stats: Stats }) {
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card className="!p-4">
-      <p className="text-xs text-[#6b7280] mb-1">{label}</p>
-      <p className="text-xl font-bold text-[#1f2328]">{value}</p>
+      <p className="text-xs text-[var(--ink-soft)] mb-1">{label}</p>
+      <p className="text-xl font-bold text-[var(--ink)]">{value}</p>
     </Card>
   );
 }

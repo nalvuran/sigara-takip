@@ -66,14 +66,14 @@ export function ManualAddSheet({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-xl bg-white rounded-t-3xl px-5 pt-4 transition-transform duration-300 ease-out ${
+        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-3xl px-5 pt-4 transition-transform duration-300 ease-out ${
           visible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
       >
-        <div className="w-10 h-1.5 bg-[#e5e7eb] rounded-full mx-auto mb-4" />
+        <div className="w-10 h-1.5 bg-[var(--border-soft)] rounded-full mx-auto mb-4" />
         <h2 className="text-lg font-semibold mb-1">Geçmişe sigara ekle</h2>
-        <p className="text-sm text-[#6b7280] mb-4">
+        <p className="text-sm text-[var(--ink-soft)] mb-4">
           Kaydetmeyi unuttuysan, ne zaman içtiğini seç.
         </p>
 
@@ -83,11 +83,11 @@ export function ManualAddSheet({
           min={minValue}
           max={maxValue}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full px-4 py-3 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a] text-[15px] mb-3"
+          className="w-full px-4 py-3 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)] text-[15px] mb-3"
         />
 
         {(localError || error) && (
-          <p className="text-sm text-[#dc2626] mb-3">{localError ?? error}</p>
+          <p className="text-sm text-[var(--danger)] mb-3">{localError ?? error}</p>
         )}
 
         <div className="flex gap-2">

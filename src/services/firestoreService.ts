@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: Omit<UserSettings, "createdAt" | "updatedAt"> = {
   dailyLimit: 10,
   cigarettesPerPack: 20,
   packagePrice: 130,
+  darkMode: false,
 };
 
 // ---------- Kullanıcı Ayarları ----------
@@ -57,7 +58,7 @@ export function subscribeUserSettings(
 
 export async function updateUserSettings(
   uid: string,
-  partial: Partial<Pick<UserSettings, "cigarettesPerPack" | "packagePrice">>
+  partial: Partial<Pick<UserSettings, "cigarettesPerPack" | "packagePrice" | "darkMode">>
 ): Promise<void> {
   const ref = doc(db, "users", uid);
   await setDoc(ref, { ...partial, updatedAt: Date.now() }, { merge: true });

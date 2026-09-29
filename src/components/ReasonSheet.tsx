@@ -36,19 +36,19 @@ export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-xl bg-white rounded-t-3xl px-5 pt-4 pb-8 transition-transform duration-300 ease-out ${
+        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-3xl px-5 pt-4 pb-8 transition-transform duration-300 ease-out ${
           visible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
       >
-        <div className="w-10 h-1.5 bg-[#e5e7eb] rounded-full mx-auto mb-4" />
+        <div className="w-10 h-1.5 bg-[var(--border-soft)] rounded-full mx-auto mb-4" />
 
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Neden içtin?</h2>
           <button
             onClick={onDismiss}
             aria-label="Kapat"
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f1f2f4] text-[#6b7280] text-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--ink-soft)] text-sm"
           >
             ✕
           </button>
@@ -65,14 +65,14 @@ export function ReasonSheet({ open, onSelect, onDismiss }: ReasonSheetProps) {
               }`}
             >
               <span className="text-6xl leading-none">{r.emoji}</span>
-              <span className="text-xs font-medium text-[#1f2328] text-center leading-tight">
+              <span className="text-xs font-medium text-[var(--ink)] text-center leading-tight">
                 {r.label}
               </span>
             </button>
           ))}
         </div>
 
-        <p className="text-xs text-[#9ca3af] text-center mt-5">
+        <p className="text-xs text-[var(--ink-faint)] text-center mt-5">
           İstersen boş geç, dilediğin zaman değiştirebilirsin.
         </p>
       </div>

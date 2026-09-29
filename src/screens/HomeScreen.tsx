@@ -97,18 +97,18 @@ export function HomeScreen() {
 
   return (
     <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-      <p className="text-[#6b7280] text-sm font-medium mb-1">BUGÜN</p>
+      <p className="text-[var(--ink-soft)] text-sm font-medium mb-1">BUGÜN</p>
 
       <div className="mb-1">
         <span
           className={`text-7xl font-bold tracking-tight ${
-            remainingIsNegative ? "text-[#dc2626]" : "text-[#1f2328]"
+            remainingIsNegative ? "text-[var(--danger)]" : "text-[var(--ink)]"
           }`}
         >
           {remaining}
         </span>
       </div>
-      <p className="text-[#6b7280] mb-6">
+      <p className="text-[var(--ink-soft)] mb-6">
         {remainingIsNegative ? "hak açığın var" : "sigara hakkın kaldı"}
       </p>
 
@@ -130,36 +130,36 @@ export function HomeScreen() {
         </GhostButton>
       )}
 
-      <p className="text-center text-sm text-[#6b7280] mb-6">
+      <p className="text-center text-sm text-[var(--ink-soft)] mb-6">
         {consumption} / {allowance} içildi
       </p>
 
       {rolloverMessage && (
         <Card className="mb-4 !py-4">
-          <p className="text-sm text-[#6b7280] leading-relaxed">{rolloverMessage}</p>
+          <p className="text-sm text-[var(--ink-soft)] leading-relaxed">{rolloverMessage}</p>
         </Card>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <Card className="!p-4">
-          <p className="text-xs text-[#6b7280] mb-1">⏱ Son sigara</p>
+          <p className="text-xs text-[var(--ink-soft)] mb-1">⏱ Son sigara</p>
           <p className="text-sm font-semibold">
             {lastSmoke ? formatElapsedSince(lastSmoke.timestamp, now) : "—"}
           </p>
           {lastSmoke && (
-            <p className="text-xs text-[#6b7280] mt-0.5">
+            <p className="text-xs text-[var(--ink-soft)] mt-0.5">
               {toLocalTimeString(lastSmoke.timestamp)}
             </p>
           )}
         </Card>
         <Card className="!p-4">
-          <p className="text-xs text-[#6b7280] mb-1">💰 Bugünkü harcama</p>
+          <p className="text-xs text-[var(--ink-soft)] mb-1">💰 Bugünkü harcama</p>
           <p className="text-sm font-semibold">{todayCost.toFixed(2)} TL</p>
         </Card>
       </div>
 
       <div className="mt-8">
-        <p className="text-xs text-[#6b7280] mb-3">Tüm zamanlar</p>
+        <p className="text-xs text-[var(--ink-soft)] mb-3">Tüm zamanlar</p>
         <StatsGrid stats={stats} />
         <div className="mt-5">
           <ConsumptionChart data={stats.chartData} />

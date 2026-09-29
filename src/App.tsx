@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { useUserSettings } from "./hooks/useUserSettings";
+import { useThemeSync } from "./hooks/useThemeSync";
 import { BottomNav } from "./components/BottomNav";
 import { LoginScreen } from "./screens/LoginScreen";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -9,10 +11,12 @@ import { SettingsScreen } from "./screens/SettingsScreen";
 
 function App() {
   const { user, loading } = useAuth();
+  const settings = useUserSettings(user?.uid ?? null);
+  useThemeSync(settings);
 
   if (loading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#fafafa]">
+      <div className="min-h-dvh flex items-center justify-center bg-[var(--bg)]">
         <div className="text-4xl animate-pulse">🚬</div>
       </div>
     );

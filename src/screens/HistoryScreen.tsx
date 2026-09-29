@@ -125,7 +125,7 @@ export function HistoryScreen() {
       {notice && (
         <div
           onClick={() => setNotice(null)}
-          className="text-sm text-[#1f2328] bg-[#f1f2f4] rounded-2xl px-4 py-3 mb-4"
+          className="text-sm text-[var(--ink)] bg-[var(--surface-2)] rounded-2xl px-4 py-3 mb-4"
         >
           {notice}
         </div>
@@ -133,7 +133,7 @@ export function HistoryScreen() {
 
       {groups.length === 0 && (
         <Card>
-          <p className="text-[#6b7280] text-sm">
+          <p className="text-[var(--ink-soft)] text-sm">
             Henüz kayıt yok. Ana sayfadan sigara ekleyince burada görünecek.
           </p>
         </Card>
@@ -142,22 +142,22 @@ export function HistoryScreen() {
       <div className="space-y-5">
         {groups.map((group) => (
           <div key={group.date}>
-            <p className="text-sm font-semibold text-[#6b7280] mb-2 px-1">
+            <p className="text-sm font-semibold text-[var(--ink-soft)] mb-2 px-1">
               {toLocalDayHeading(group.list[0].timestamp)}
-              <span className="text-[#9ca3af] font-normal"> · {group.list.length} sigara</span>
+              <span className="text-[var(--ink-faint)] font-normal"> · {group.list.length} sigara</span>
             </p>
             <Card className="!p-2">
               {group.list.map((s, i) => (
                 <div
                   key={s.id}
                   className={`flex items-center gap-3 px-3 py-2.5 ${
-                    i !== group.list.length - 1 ? "border-b border-black/5" : ""
+                    i !== group.list.length - 1 ? "border-b border-[var(--border)]" : ""
                   }`}
                 >
                   <span className="text-lg">{s.reason ? getReasonDef(s.reason).emoji : "🚬"}</span>
                   <span className="text-[15px]">{toLocalTimeString(s.timestamp)}</span>
                   {s.reason && (
-                    <span className="text-xs text-[#9ca3af] ml-auto">
+                    <span className="text-xs text-[var(--ink-faint)] ml-auto">
                       {getReasonDef(s.reason).label}
                     </span>
                   )}
@@ -167,7 +167,7 @@ export function HistoryScreen() {
                       setDeleteTarget(s);
                     }}
                     aria-label="Kaydı sil"
-                    className={`w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] active:bg-[#f1f2f4] ${
+                    className={`w-9 h-9 flex items-center justify-center rounded-full text-[var(--ink-soft)] active:bg-[var(--surface-2)] ${
                       s.reason ? "" : "ml-auto"
                     }`}
                   >

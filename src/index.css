@@ -2,15 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- Tema token'ları (açık / koyu) ---------- */
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f1f2f4;
+  --surface-3: #f5f6f7;
+  --surface-translucent: rgba(255, 255, 255, 0.96);
+
+  --ink: #1f2328;
+  --ink-soft: #6b7280;
+  --ink-faint: #9ca3af;
+  --quote: #4b5563;
+
+  --border: rgba(0, 0, 0, 0.06);
+  --divider: rgba(0, 0, 0, 0.1);
+  --border-soft: #e5e7eb;
+  --muted-track: #d1d5db;
+
+  --accent: #16a34a;
+  --accent-dark: #15803d;
+  --danger: #dc2626;
+  --danger-dark: #b91c1c;
+}
+
+.dark {
+  --bg: #101214;
+  --surface: #1a1d20;
+  --surface-2: #24282c;
+  --surface-3: #22262a;
+  --surface-translucent: rgba(20, 22, 24, 0.94);
+
+  --ink: #f3f4f5;
+  --ink-soft: #9aa1a9;
+  --ink-faint: #767d85;
+  --quote: #b8bfc6;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --divider: rgba(255, 255, 255, 0.12);
+  --border-soft: #33383d;
+  --muted-track: #3a3f45;
+
+  --accent: #22c55e;
+  --accent-dark: #16a34a;
+  --danger: #f04444;
+  --danger-dark: #dc2626;
+}
+
 html, body, #root {
   height: 100%;
 }
 
 body {
-  background-color: #fafafa;
-  color: #1f2328;
+  background-color: var(--bg);
+  color: var(--ink);
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 * {

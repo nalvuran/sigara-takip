@@ -31,27 +31,27 @@ export function StatsScreen() {
       <h1 className="text-2xl font-bold mb-5">Ayna</h1>
 
       <Card className="!p-5 mb-5">
-        <p className="text-xs text-[#6b7280] mb-2">💭 Bugünün yorumu</p>
+        <p className="text-xs text-[var(--ink-soft)] mb-2">💭 Bugünün yorumu</p>
         {dailyInsight ? (
           <>
-            <p className="text-[15px] leading-relaxed text-[#1f2328]">
+            <p className="text-[15px] leading-relaxed text-[var(--ink)]">
               {dailyInsight.observation}
             </p>
-            <p className="text-[15px] leading-relaxed font-medium text-[#16a34a] mt-3">
+            <p className="text-[15px] leading-relaxed font-medium text-[var(--accent)] mt-3">
               {dailyInsight.question}
             </p>
-            <div className="mt-4 pt-4 border-t border-black/5">
-              <p className="text-sm italic leading-relaxed text-[#4b5563]">
+            <div className="mt-4 pt-4 border-t border-[var(--border)]">
+              <p className="text-sm italic leading-relaxed text-[var(--quote)]">
                 “{dailyInsight.quote.text}”
               </p>
-              <p className="text-xs text-[#9ca3af] mt-1.5">
+              <p className="text-xs text-[var(--ink-faint)] mt-1.5">
                 — {dailyInsight.quote.author}
                 {dailyInsight.quote.source ? `, ${dailyInsight.quote.source}` : ""}
               </p>
             </div>
           </>
         ) : (
-          <p className="text-sm leading-relaxed text-[#6b7280]">
+          <p className="text-sm leading-relaxed text-[var(--ink-soft)]">
             Henüz yeterli veri yok. Birkaç gün daha kayıt ve sebep girdikçe, burada kendi
             örüntülerini yansıtan yorumlar belirecek.
           </p>

@@ -3,6 +3,7 @@ export interface UserSettings {
   dailyLimit: number;
   cigarettesPerPack: number;
   packagePrice: number;
+  darkMode?: boolean; // elle seçilen tema; yoksa açık mod varsayılır
   createdAt: number; // epoch ms
   updatedAt: number;
 }

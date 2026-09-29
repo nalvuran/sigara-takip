@@ -48,12 +48,12 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-5 bg-[#fafafa]">
+    <div className="min-h-dvh flex items-center justify-center px-5 bg-[var(--bg)]">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🚬</div>
-          <h1 className="text-2xl font-bold text-[#1f2328]">Sigara Takip</h1>
-          <p className="text-[#6b7280] mt-1">
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Sigara Takip</h1>
+          <p className="text-[var(--ink-soft)] mt-1">
             Günlük hakkını takip et, yargısız.
           </p>
         </div>
@@ -65,7 +65,7 @@ export function LoginScreen() {
               placeholder="E-posta"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a] text-[15px]"
+              className="w-full px-4 py-3 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)] text-[15px]"
               autoComplete="email"
             />
             <input
@@ -73,11 +73,11 @@ export function LoginScreen() {
               placeholder="Şifre"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a] text-[15px]"
+              className="w-full px-4 py-3 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)] text-[15px]"
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
 
-            {error && <p className="text-sm text-[#dc2626]">{error}</p>}
+            {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
             <PrimaryButton type="submit" disabled={loading} className="w-full py-3 text-[15px]">
               {mode === "signin" ? "Giriş Yap" : "Hesap Oluştur"}
@@ -85,9 +85,9 @@ export function LoginScreen() {
           </form>
 
           <div className="flex items-center gap-3 my-4">
-            <div className="h-px bg-black/10 flex-1" />
-            <span className="text-xs text-[#6b7280]">veya</span>
-            <div className="h-px bg-black/10 flex-1" />
+            <div className="h-px bg-[var(--divider)] flex-1" />
+            <span className="text-xs text-[var(--ink-soft)]">veya</span>
+            <div className="h-px bg-[var(--divider)] flex-1" />
           </div>
 
           <GhostButton onClick={handleGoogle} disabled={loading} className="w-full py-3 text-[15px]">
@@ -97,7 +97,7 @@ export function LoginScreen() {
 
         <button
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="w-full text-center text-sm text-[#6b7280] mt-5"
+          className="w-full text-center text-sm text-[var(--ink-soft)] mt-5"
         >
           {mode === "signin"
             ? "Hesabın yok mu? Kayıt ol"

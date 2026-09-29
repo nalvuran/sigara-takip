@@ -67,6 +67,15 @@ açıklama ve testler için `src/logic/allowance.ts` ve `src/logic/allowance.tes
   uygulamanın hiç açılmadığı günler için geriye dönük ledger oluşturma
   (backfill) eklenmemiştir.
 
+## Gece Modu
+Ayarlar → Görünüm'den elle açılıp kapatılan karanlık mod. Tercih Firestore'a
+(`users/{uid}.darkMode`) kaydedilir, tüm cihazlarda senkronize olur ve
+Firestore'un canlı dinleyicisi sayesinde ayarı değiştirdiğin an (sayfa
+yenilemeden) tüm ekranlara yayılır. Renkler `src/index.css`'te `:root` /
+`.dark` altında CSS custom property olarak tanımlı; bileşenler sabit hex
+yerine `var(--token)` kullanır, böylece tek bir yerden yönetilir. Varsayılan:
+açık mod.
+
 ## Aşama 3 — Tamamlananlar
 - **PWA ikonları**: `public/icon-192.png`, `public/icon-512.png`, `public/apple-touch-icon.png` gerçek ikonlarla dolduruldu (kaynak: `scripts/icon-source.svg`).
 - **Yorumlar**: Ayna ekranının üstünde günde 1 kez değişen bir kart: kullanıcının kendi verisinden çıkan nötr bir **gözlem**, ayrı satırda kişiyi kendi içine bakmaya çağıran kısa açık uçlu bir **soru** ve konuyla ilgili kaynağı doğrulanabilir bir **söz** (`src/logic/quotes.ts`, yalnızca telif süresi dolmuş eski metinler, serbest çeviri). Yaklaşık 16 örüntü türü, her birinin birden çok anlatım biçimi ve 5-6 sorusu vardır. **Tekrarı önlemek için** her gün gösterilen kart Firestore'da (`users/{uid}/meta/insight-YYYY-MM-DD`) saklanır; ertesi gün örüntü, anlatım, soru ve söz en az kullanılandan seçilir, dünkü hariç tutulur. Aynı gün her cihazda aynı kart görünür. Kayıt yazılamazsa tarihe göre deterministik seçime düşer. Mantık: `src/logic/insights.ts` (60 günlük tekrar simülasyonu dahil test edilmiş).

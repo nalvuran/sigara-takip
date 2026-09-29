@@ -7,7 +7,7 @@ import {
   resetAllUserData,
 } from "../services/firestoreService";
 import { logOut } from "../services/authService";
-import { Card, PrimaryButton, GhostButton, DangerButton } from "../components/ui";
+import { Card, PrimaryButton, GhostButton, DangerButton, Switch } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
 import { calculateCostPerCigarette } from "../logic/allowance";
 
@@ -27,7 +27,7 @@ export function SettingsScreen() {
   if (!settings) {
     return (
       <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-        <p className="text-[#6b7280]">Yükleniyor…</p>
+        <p className="text-[var(--ink-soft)]">Yükleniyor…</p>
       </div>
     );
   }
@@ -80,6 +80,14 @@ export function SettingsScreen() {
     }
   }
 
+  async function handleToggleDarkMode(next: boolean) {
+    try {
+      await updateUserSettings(uid!, { darkMode: next });
+    } catch {
+      setMessage("Tema değiştirilemedi, tekrar deneyin.");
+    }
+  }
+
   async function handleReset() {
     setResetting(true);
     try {
@@ -98,15 +106,15 @@ export function SettingsScreen() {
       <h1 className="text-2xl font-bold">Ayarlar</h1>
 
       {message && (
-        <div className="text-sm text-[#1f2328] bg-[#f1f2f4] rounded-2xl px-4 py-3">
+        <div className="text-sm text-[var(--ink)] bg-[var(--surface-2)] rounded-2xl px-4 py-3">
           {message}
         </div>
       )}
 
       <Card>
         <h2 className="font-semibold mb-1">Günlük temel limit</h2>
-        <p className="text-sm text-[#6b7280] mb-3">
-          Şu an: <span className="font-semibold text-[#1f2328]">{settings.dailyLimit}</span> sigara/gün
+        <p className="text-sm text-[var(--ink-soft)] mb-3">
+          Şu an: <span className="font-semibold text-[var(--ink)]">{settings.dailyLimit}</span> sigara/gün
         </p>
         <div className="flex gap-2">
           <input
@@ -115,22 +123,22 @@ export function SettingsScreen() {
             placeholder="Örn. 8"
             value={limitInput}
             onChange={(e) => setLimitInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a]"
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
           <PrimaryButton onClick={handleLimitSave} disabled={saving} className="px-5">
             Kaydet
           </PrimaryButton>
         </div>
-        <p className="text-xs text-[#9ca3af] mt-2">
+        <p className="text-xs text-[var(--ink-faint)] mt-2">
           Değişiklik yarından itibaren geçerli olur, geçmiş günler etkilenmez.
         </p>
       </Card>
 
       <Card>
         <h2 className="font-semibold mb-1">Paket bilgisi</h2>
-        <p className="text-sm text-[#6b7280] mb-3">
+        <p className="text-sm text-[var(--ink-soft)] mb-3">
           {settings.packagePrice} TL / {settings.cigarettesPerPack} adet ·{" "}
-          <span className="font-semibold text-[#1f2328]">
+          <span className="font-semibold text-[var(--ink)]">
             {costPerCigarette.toFixed(2)} TL
           </span>{" "}
           / sigara
@@ -142,7 +150,7 @@ export function SettingsScreen() {
             placeholder={`Fiyat (${settings.packagePrice})`}
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a]"
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
           <input
             type="number"
@@ -150,7 +158,7 @@ export function SettingsScreen() {
             placeholder={`Adet (${settings.cigarettesPerPack})`}
             value={countInput}
             onChange={(e) => setCountInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[#f5f6f7] outline-none focus:ring-2 focus:ring-[#16a34a]"
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
           />
         </div>
         <PrimaryButton onClick={handlePackageSave} disabled={saving} className="w-full py-2.5 mt-3">
@@ -159,15 +167,29 @@ export function SettingsScreen() {
       </Card>
 
       <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold mb-1">Görünüm</h2>
+            <p className="text-sm text-[var(--ink-soft)]">Karanlık mod</p>
+          </div>
+          <Switch
+            checked={!!settings.darkMode}
+            onChange={handleToggleDarkMode}
+            label="Karanlık modu aç/kapat"
+          />
+        </div>
+      </Card>
+
+      <Card>
         <h2 className="font-semibold mb-1">Hesap</h2>
-        <p className="text-sm text-[#6b7280] mb-3">{user?.email}</p>
+        <p className="text-sm text-[var(--ink-soft)] mb-3">{user?.email}</p>
         <GhostButton onClick={() => logOut()} className="w-full py-2.5">
           Çıkış Yap
         </GhostButton>
       </Card>
 
       <Card>
-        <p className="text-sm text-[#6b7280] mb-3">
+        <p className="text-sm text-[var(--ink-soft)] mb-3">
           Tüm sigara geçmişini, istatistikleri ve günlük hak devir kayıtlarını siler.
           Günlük limit, paket fiyatı ve hesabın korunur.
         </p>
@@ -178,7 +200,7 @@ export function SettingsScreen() {
           </DangerButton>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm font-medium text-[#dc2626]">
+            <p className="text-sm font-medium text-[var(--danger)]">
               Tüm sigara geçmişiniz, istatistikleriniz ve günlük hak geçmişiniz
               silinecek. Bu işlem geri alınamaz.
             </p>
