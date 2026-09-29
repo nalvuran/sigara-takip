@@ -10,6 +10,9 @@ export const SMOKE_REASONS: SmokeReasonDef[] = [
   { id: "sosyal", label: "Sosyal", emoji: "👥" },
   { id: "aliskanlik", label: "Alışkanlık", emoji: "☕" },
   { id: "sikinti", label: "Sıkıntı", emoji: "😐" },
+  { id: "ofke", label: "Öfke / Sinir", emoji: "😤" },
+  { id: "konsantrasyon", label: "Konsantrasyon", emoji: "🎯" },
+  { id: "kutlama", label: "Kutlama", emoji: "🎉" },
 ];
 
 const UNSPECIFIED: SmokeReasonDef = {
