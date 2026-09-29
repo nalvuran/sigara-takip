@@ -39,7 +39,7 @@ export function StatsGrid({ stats }: { stats: Stats }) {
   return (
     <div>
       {/* Birincil metrikler: büyük, karaktersel */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8 animate-rise">
         <HeroMetric value={String(stats.totalSmokes)} label="Toplam sigara" />
         <HeroMetric value={stats.dailyAverage.toFixed(1)} label="Günlük ortalama" />
         <HeroMetric

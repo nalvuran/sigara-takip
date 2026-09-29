@@ -104,7 +104,8 @@ export function HomeScreen() {
           Bugün
         </p>
         <div
-          className={`font-bold tracking-tight tabular-nums leading-none ${
+          key={remaining}
+          className={`font-bold tracking-tight tabular-nums leading-none animate-number ${
             remainingIsNegative ? "text-[var(--danger)]" : "text-[var(--ink)]"
           }`}
           style={{ fontSize: "104px" }}

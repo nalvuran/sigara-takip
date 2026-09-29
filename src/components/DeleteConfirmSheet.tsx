@@ -32,14 +32,14 @@ export function DeleteConfirmSheet({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center transition-colors duration-300 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center transition-colors duration-[220ms] ${
         visible ? "bg-black/40" : "bg-black/0"
       }`}
       onClick={busy ? undefined : onCancel}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-[28px] px-5 pt-4 transition-transform duration-300 ease-out ${
+        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-[28px] px-5 pt-4 transition-transform duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
           visible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}

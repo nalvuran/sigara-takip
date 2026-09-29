@@ -40,7 +40,14 @@ export function ConsumptionChart({ data }: { data: ChartPoint[] }) {
               stroke="var(--border-soft)"
               strokeDasharray="3 3"
             />
-            <Bar dataKey="consumption" radius={[3, 3, 0, 0]} fill="var(--accent)" />
+            <Bar
+              dataKey="consumption"
+              radius={[3, 3, 0, 0]}
+              fill="var(--accent)"
+              isAnimationActive
+              animationDuration={420}
+              animationEasing="ease-out"
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
