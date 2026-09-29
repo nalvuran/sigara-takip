@@ -3,11 +3,23 @@ import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 export function Card({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
   return (
     <div
-      className={`bg-[var(--surface)] rounded-3xl shadow-[0_1px_3px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] p-5 ${className}`}
+      className={`bg-[var(--surface)] rounded-2xl border border-[var(--border)] p-5 ${className}`}
     >
       {children}
     </div>
   );
+}
+
+export function SectionLabel({ children }: PropsWithChildren) {
+  return (
+    <p className="text-[11px] font-semibold tracking-[0.12em] text-[var(--ink-faint)] uppercase mb-2">
+      {children}
+    </p>
+  );
+}
+
+export function Divider() {
+  return <div className="h-px bg-[var(--divider)]" />;
 }
 
 export function PrimaryButton({

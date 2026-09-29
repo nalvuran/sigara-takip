@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useSmokesRange } from "../hooks/useSmokes";
-import { Card, PrimaryButton } from "../components/ui";
 import { ManualAddSheet } from "../components/ManualAddSheet";
 import { ReasonSheet } from "../components/ReasonSheet";
 import { DeleteConfirmSheet } from "../components/DeleteConfirmSheet";
@@ -101,96 +101,87 @@ export function HistoryScreen() {
     }
     return Array.from(map.entries())
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([date, list]) => ({
-        date,
-        list: [...list].sort((a, b) => b.timestamp - a.timestamp),
-      }));
+      .map(([date, list]) => {
+        const ascending = [...list].sort((a, b) => a.timestamp - b.timestamp);
+        const ordinal = new Map(ascending.map((s, i) => [s.id, i + 1]));
+        return {
+          date,
+          ordinal,
+          list: [...list].sort((a, b) => b.timestamp - a.timestamp),
+        };
+      });
   }, [smokes]);
 
   return (
-    <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-bold">Geçmiş</h1>
-        <PrimaryButton
+    <div className="max-w-xl mx-auto px-6 pt-14 pb-32 sm:pt-32">
+      <div className="flex items-baseline justify-between mb-10">
+        <h1 className="font-serif-display text-[34px] text-[var(--ink)] leading-none">Geçmiş</h1>
+        <button
           onClick={() => {
             setManualError(null);
             setManualOpen(true);
           }}
-          className="px-4 py-2 text-sm"
+          className="text-[14px] text-[var(--ink-soft)]"
         >
           + Ekle
-        </PrimaryButton>
+        </button>
       </div>
 
       {notice && (
-        <div
+        <p
           onClick={() => setNotice(null)}
-          className="text-sm text-[var(--ink)] bg-[var(--surface-2)] rounded-2xl px-4 py-3 mb-4"
+          className="text-[13px] leading-relaxed text-[var(--ink-soft)] pb-4 mb-8 border-b border-[var(--border)]"
         >
           {notice}
-        </div>
+        </p>
       )}
 
       {groups.length === 0 && (
-        <Card>
-          <p className="text-[var(--ink-soft)] text-sm">
-            Henüz kayıt yok. Ana sayfadan sigara ekleyince burada görünecek.
-          </p>
-        </Card>
+        <p className="text-[var(--ink-soft)] text-[14px]">
+          Henüz kayıt yok. Ana sayfadan sigara ekleyince burada görünecek.
+        </p>
       )}
 
-      <div className="space-y-5">
+      <div>
         {groups.map((group) => (
-          <div key={group.date}>
-            <p className="text-sm font-semibold text-[var(--ink-soft)] mb-2 px-1">
+          <div key={group.date} className="mb-9">
+            <p className="text-[11px] font-semibold tracking-[0.14em] text-[var(--ink-faint)] uppercase mb-3">
               {toLocalDayHeading(group.list[0].timestamp)}
-              <span className="text-[var(--ink-faint)] font-normal"> · {group.list.length} sigara</span>
+              <span className="font-normal normal-case tracking-normal"> · {group.list.length} sigara</span>
             </p>
-            <Card className="!p-2">
+
+            <div>
               {group.list.map((s, i) => (
                 <div
                   key={s.id}
-                  className={`flex items-center gap-3 px-3 py-2.5 ${
-                    i !== group.list.length - 1 ? "border-b border-[var(--border)]" : ""
+                  className={`flex items-start gap-4 py-3 ${
+                    i < group.list.length - 1 ? "border-b border-[var(--border)]" : ""
                   }`}
                 >
-                  <span className="text-lg">{s.reason ? getReasonDef(s.reason).emoji : "🚬"}</span>
-                  <span className="text-[15px]">{toLocalTimeString(s.timestamp)}</span>
-                  {s.reason && (
-                    <span className="text-xs text-[var(--ink-faint)] ml-auto">
-                      {getReasonDef(s.reason).label}
-                    </span>
-                  )}
+                  <div className="w-[52px] shrink-0 pt-0.5 text-[15px] font-medium tabular-nums text-[var(--ink)]">
+                    {toLocalTimeString(s.timestamp)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[14px] text-[var(--ink)]">
+                      {s.reason ? getReasonDef(s.reason).label : "—"}
+                    </p>
+                    <p className="text-[12px] text-[var(--ink-faint)] mt-0.5">
+                      {group.ordinal.get(s.id)}. sigara
+                    </p>
+                  </div>
                   <button
                     onClick={() => {
                       setDeleteError(null);
                       setDeleteTarget(s);
                     }}
                     aria-label="Kaydı sil"
-                    className={`w-9 h-9 flex items-center justify-center rounded-full text-[var(--ink-soft)] active:bg-[var(--surface-2)] ${
-                      s.reason ? "" : "ml-auto"
-                    }`}
+                    className="w-8 h-8 -mr-1 flex items-center justify-center text-[var(--ink-faint)]"
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M3 6h18" />
-                      <path d="M8 6V4h8v2" />
-                      <path d="M6 6l1 14h10l1-14" />
-                      <path d="M10 10v6M14 10v6" />
-                    </svg>
+                    <Trash2 size={16} strokeWidth={1.6} />
                   </button>
                 </div>
               ))}
-            </Card>
+            </div>
           </div>
         ))}
       </div>

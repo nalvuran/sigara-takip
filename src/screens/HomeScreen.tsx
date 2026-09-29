@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { Plus, Clock, Banknote } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import { useTodayLedger } from "../hooks/useTodayLedger";
 import { useSmokesForDate } from "../hooks/useSmokes";
-import { Card, GhostButton } from "../components/ui";
+import { SectionLabel, Divider } from "../components/ui";
 import { ReasonSheet } from "../components/ReasonSheet";
 import { StatsGrid } from "../components/StatsGrid";
 import { ConsumptionChart } from "../components/ConsumptionChart";
@@ -52,11 +53,11 @@ export function HomeScreen() {
   const rolloverMessage = useMemo(() => {
     if (!entry) return null;
     if (remaining >= 0) {
-      return `${allowance} hakkın vardı, ${consumption} içtin, ${remaining} hakkın yarına devredecek.`;
+      return `${allowance} hakkın vardı · ${consumption} içtin · ${remaining} hakkın yarına devredecek`;
     }
-    return `${allowance} hakkın vardı, ${consumption} içtin, ${Math.abs(
+    return `${allowance} hakkın vardı · ${consumption} içtin · ${Math.abs(
       remaining
-    )} hak sonraki günden düşülecek.`;
+    )} hak sonraki günden düşülecek`;
   }, [entry, allowance, consumption, remaining]);
 
   async function handleSmoke() {
@@ -96,72 +97,92 @@ export function HomeScreen() {
   const remainingIsNegative = remaining < 0;
 
   return (
-    <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-      <p className="text-[var(--ink-soft)] text-sm font-medium mb-1">BUGÜN</p>
-
-      <div className="mb-1">
-        <span
-          className={`text-7xl font-bold tracking-tight ${
+    <div className="max-w-xl mx-auto px-6 pt-14 pb-32 sm:pt-32">
+      {/* Bugünkü durum */}
+      <div className="text-center mb-10">
+        <p className="text-[11px] font-semibold tracking-[0.16em] text-[var(--ink-faint)] uppercase mb-3">
+          Bugün
+        </p>
+        <div
+          className={`font-bold tracking-tight tabular-nums leading-none ${
             remainingIsNegative ? "text-[var(--danger)]" : "text-[var(--ink)]"
           }`}
+          style={{ fontSize: "104px" }}
         >
           {remaining}
-        </span>
+        </div>
+        <p className="text-[15px] text-[var(--ink-soft)] mt-3">
+          {remainingIsNegative ? "hak açığın var" : "sigara hakkın kaldı"}
+        </p>
       </div>
-      <p className="text-[var(--ink-soft)] mb-6">
-        {remainingIsNegative ? "hak açığın var" : "sigara hakkın kaldı"}
-      </p>
 
-      <div className="flex justify-center mb-3">
+      {/* Aksiyon */}
+      <div className="flex flex-col items-center gap-2.5 mb-8">
         <button
           onClick={handleSmoke}
           disabled={busy}
-          aria-label="İçtim"
-          className="w-40 h-40 flex items-center justify-center text-8xl active:scale-90 disabled:opacity-40 transition-transform"
-          style={{ filter: "drop-shadow(0 6px 10px rgba(0,0,0,0.15))" }}
+          aria-label="Sigara ekle"
+          className="w-[76px] h-[76px] rounded-[26px] bg-[var(--accent-soft)] flex items-center justify-center active:scale-95 disabled:opacity-40 transition-transform"
         >
-          🚭
+          <Plus size={30} strokeWidth={1.75} color="var(--accent)" />
         </button>
+        <span className="text-[12px] text-[var(--ink-faint)]">Sigara ekle</span>
+
+        {lastSmoke && showUndo && (
+          <button
+            onClick={handleUndo}
+            className="text-[13px] text-[var(--ink-soft)] underline decoration-[var(--border-soft)] underline-offset-4 mt-1"
+          >
+            Geri al
+          </button>
+        )}
       </div>
 
-      {lastSmoke && showUndo && (
-        <GhostButton onClick={handleUndo} className="w-full py-2.5 text-sm mb-2">
-          ↩ Geri Al
-        </GhostButton>
-      )}
-
-      <p className="text-center text-sm text-[var(--ink-soft)] mb-6">
+      <p className="text-center text-[13px] text-[var(--ink-faint)] mb-7 tabular-nums">
         {consumption} / {allowance} içildi
       </p>
 
       {rolloverMessage && (
-        <Card className="mb-4 !py-4">
-          <p className="text-sm text-[var(--ink-soft)] leading-relaxed">{rolloverMessage}</p>
-        </Card>
+        <>
+          <Divider />
+          <p className="text-center text-[13px] leading-relaxed text-[var(--ink-soft)] py-4">
+            {rolloverMessage}
+          </p>
+          <Divider />
+        </>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="!p-4">
-          <p className="text-xs text-[var(--ink-soft)] mb-1">⏱ Son sigara</p>
-          <p className="text-sm font-semibold">
+      {/* Son sigara / Bugünkü harcama */}
+      <div className="grid grid-cols-2 py-5">
+        <div className="flex flex-col gap-1.5 pr-4">
+          <div className="flex items-center gap-1.5 text-[var(--ink-faint)]">
+            <Clock size={14} strokeWidth={1.75} />
+            <span className="text-[11px] tracking-wide uppercase">Son sigara</span>
+          </div>
+          <p className="text-[16px] font-medium tabular-nums">
             {lastSmoke ? formatElapsedSince(lastSmoke.timestamp, now) : "—"}
           </p>
           {lastSmoke && (
-            <p className="text-xs text-[var(--ink-soft)] mt-0.5">
+            <p className="text-[12px] text-[var(--ink-faint)] tabular-nums">
               {toLocalTimeString(lastSmoke.timestamp)}
             </p>
           )}
-        </Card>
-        <Card className="!p-4">
-          <p className="text-xs text-[var(--ink-soft)] mb-1">💰 Bugünkü harcama</p>
-          <p className="text-sm font-semibold">{todayCost.toFixed(2)} TL</p>
-        </Card>
+        </div>
+        <div className="flex flex-col gap-1.5 pl-4 border-l border-[var(--border)]">
+          <div className="flex items-center gap-1.5 text-[var(--ink-faint)]">
+            <Banknote size={14} strokeWidth={1.75} />
+            <span className="text-[11px] tracking-wide uppercase">Bugünkü harcama</span>
+          </div>
+          <p className="text-[16px] font-medium tabular-nums">{todayCost.toFixed(2)} TL</p>
+        </div>
       </div>
+      <Divider />
 
-      <div className="mt-8">
-        <p className="text-xs text-[var(--ink-soft)] mb-3">Tüm zamanlar</p>
+      {/* Tüm zamanlar */}
+      <div className="mt-9">
+        <SectionLabel>Tüm zamanlar</SectionLabel>
         <StatsGrid stats={stats} />
-        <div className="mt-5">
+        <div className="mt-8">
           <ConsumptionChart data={stats.chartData} />
         </div>
       </div>

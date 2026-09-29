@@ -3,50 +3,58 @@
 @tailwind utilities;
 
 /* ---------- Tema token'ları (açık / koyu) ---------- */
+/* Sıcak, nötr, editorial bir palet: yeşil ana marka rengi değil. */
 :root {
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f1f2f4;
-  --surface-3: #f5f6f7;
-  --surface-translucent: rgba(255, 255, 255, 0.96);
+  --font-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 
-  --ink: #1f2328;
-  --ink-soft: #6b7280;
-  --ink-faint: #9ca3af;
-  --quote: #4b5563;
+  --bg: #f6f3ee;
+  --surface: #fbfaf7;
+  --surface-2: #efebe3;
+  --surface-3: #f1ede5;
+  --surface-translucent: rgba(251, 250, 247, 0.92);
 
-  --border: rgba(0, 0, 0, 0.06);
-  --divider: rgba(0, 0, 0, 0.1);
-  --border-soft: #e5e7eb;
-  --muted-track: #d1d5db;
+  --ink: #171717;
+  --ink-soft: #706d67;
+  --ink-faint: #9b9891;
+  --quote: #8a8377;
 
-  --accent: #16a34a;
-  --accent-dark: #15803d;
-  --danger: #dc2626;
-  --danger-dark: #b91c1c;
+  --border: rgba(23, 23, 23, 0.08);
+  --divider: rgba(23, 23, 23, 0.1);
+  --border-soft: #e4e0d8;
+  --muted-track: #e4e0d8;
+
+  --accent: #b96f3d;
+  --accent-soft: #efe0d4;
+  --accent-dark: #96592f;
+
+  --danger: #ac3b2e;
+  --danger-dark: #8a2f25;
 }
 
 .dark {
-  --bg: #101214;
-  --surface: #1a1d20;
-  --surface-2: #24282c;
-  --surface-3: #22262a;
-  --surface-translucent: rgba(20, 22, 24, 0.94);
+  --bg: #111111;
+  --surface: #1a1a19;
+  --surface-2: #221f1c;
+  --surface-3: #201e1a;
+  --surface-translucent: rgba(17, 17, 17, 0.9);
 
-  --ink: #f3f4f5;
-  --ink-soft: #9aa1a9;
-  --ink-faint: #767d85;
-  --quote: #b8bfc6;
+  --ink: #f2f0eb;
+  --ink-soft: #aaa69e;
+  --ink-faint: #7d7972;
+  --quote: #b3ada2;
 
-  --border: rgba(255, 255, 255, 0.09);
-  --divider: rgba(255, 255, 255, 0.12);
-  --border-soft: #33383d;
-  --muted-track: #3a3f45;
+  --border: rgba(255, 255, 255, 0.08);
+  --divider: rgba(255, 255, 255, 0.1);
+  --border-soft: #2a2927;
+  --muted-track: #33302b;
 
-  --accent: #22c55e;
-  --accent-dark: #16a34a;
-  --danger: #f04444;
-  --danger-dark: #dc2626;
+  --accent: #d08a5a;
+  --accent-soft: #2b2320;
+  --accent-dark: #b96f3d;
+
+  --danger: #c65b4c;
+  --danger-dark: #ac3b2e;
 }
 
 html, body, #root {
@@ -56,7 +64,7 @@ html, body, #root {
 body {
   background-color: var(--bg);
   color: var(--ink);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -67,4 +75,13 @@ body {
 
 button {
   font-family: inherit;
+}
+
+.font-serif-display {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

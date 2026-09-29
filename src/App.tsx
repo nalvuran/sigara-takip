@@ -17,7 +17,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-[var(--bg)]">
-        <div className="text-4xl animate-pulse">🚬</div>
+        <div className="w-2 h-2 rounded-full bg-[var(--ink-faint)] animate-pulse" />
       </div>
     );
   }

@@ -66,12 +66,12 @@ export function ManualAddSheet({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-3xl px-5 pt-4 transition-transform duration-300 ease-out ${
+        className={`w-full max-w-xl bg-[var(--surface)] rounded-t-[28px] px-5 pt-4 transition-transform duration-300 ease-out ${
           visible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
       >
-        <div className="w-10 h-1.5 bg-[var(--border-soft)] rounded-full mx-auto mb-4" />
+        <div className="w-9 h-1 bg-[var(--border-soft)] rounded-full mx-auto mb-4" />
         <h2 className="text-lg font-semibold mb-1">Geçmişe sigara ekle</h2>
         <p className="text-sm text-[var(--ink-soft)] mb-4">
           Kaydetmeyi unuttuysan, ne zaman içtiğini seç.

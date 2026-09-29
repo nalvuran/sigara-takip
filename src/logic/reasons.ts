@@ -1,24 +1,37 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  CloudLightning,
+  Waves,
+  Users,
+  Coffee,
+  Hourglass,
+  Flame,
+  Target,
+  PartyPopper,
+  CircleHelp,
+} from "lucide-react";
+
 export interface SmokeReasonDef {
   id: string;
   label: string;
-  emoji: string;
+  icon: LucideIcon;
 }
 
 export const SMOKE_REASONS: SmokeReasonDef[] = [
-  { id: "stres", label: "Stres", emoji: "😰" },
-  { id: "keyif", label: "Keyif / Rahatlama", emoji: "😌" },
-  { id: "sosyal", label: "Sosyal", emoji: "👥" },
-  { id: "aliskanlik", label: "Alışkanlık", emoji: "☕" },
-  { id: "sikinti", label: "Sıkıntı", emoji: "😐" },
-  { id: "ofke", label: "Öfke / Sinir", emoji: "😤" },
-  { id: "konsantrasyon", label: "Konsantrasyon", emoji: "🎯" },
-  { id: "kutlama", label: "Kutlama", emoji: "🎉" },
+  { id: "stres", label: "Stres", icon: CloudLightning },
+  { id: "keyif", label: "Keyif / Rahatlama", icon: Waves },
+  { id: "sosyal", label: "Sosyal", icon: Users },
+  { id: "aliskanlik", label: "Alışkanlık", icon: Coffee },
+  { id: "sikinti", label: "Sıkıntı", icon: Hourglass },
+  { id: "ofke", label: "Öfke / Sinir", icon: Flame },
+  { id: "konsantrasyon", label: "Konsantrasyon", icon: Target },
+  { id: "kutlama", label: "Kutlama", icon: PartyPopper },
 ];
 
 const UNSPECIFIED: SmokeReasonDef = {
   id: "belirtilmedi",
   label: "Belirtilmedi",
-  emoji: "❔",
+  icon: CircleHelp,
 };
 
 export function getReasonDef(id: string | null | undefined): SmokeReasonDef {

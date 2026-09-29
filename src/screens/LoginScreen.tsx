@@ -5,7 +5,7 @@ import {
   signInWithGoogle,
   friendlyAuthError,
 } from "../services/authService";
-import { PrimaryButton, GhostButton, Card } from "../components/ui";
+import { PrimaryButton, GhostButton } from "../components/ui";
 
 export function LoginScreen() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -50,15 +50,17 @@ export function LoginScreen() {
   return (
     <div className="min-h-dvh flex items-center justify-center px-5 bg-[var(--bg)]">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🚬</div>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Sigara Takip</h1>
-          <p className="text-[var(--ink-soft)] mt-1">
+        <div className="text-center mb-10">
+          <div className="font-serif-display text-[40px] text-[var(--accent)] leading-none mb-4">
+            Ayna
+          </div>
+          <h1 className="text-[22px] font-medium text-[var(--ink)]">Sigara Takip</h1>
+          <p className="text-[var(--ink-soft)] text-[14px] mt-1.5">
             Günlük hakkını takip et, yargısız.
           </p>
         </div>
 
-        <Card>
+        <div className="border border-[var(--border)] rounded-2xl p-6 bg-[var(--surface)]">
           <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="email"
@@ -93,7 +95,7 @@ export function LoginScreen() {
           <GhostButton onClick={handleGoogle} disabled={loading} className="w-full py-3 text-[15px]">
             Google ile devam et
           </GhostButton>
-        </Card>
+        </div>
 
         <button
           onClick={() => setMode(mode === "signin" ? "signup" : "signin")}

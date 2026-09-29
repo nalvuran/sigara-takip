@@ -4,8 +4,8 @@
   "description": "Günlük sigara hakkını ve harcamanı yargısız takip et.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#16a34a",
+  "background_color": "#F6F3EE",
+  "theme_color": "#B96F3D",
   "orientation": "portrait",
   "icons": [
     {

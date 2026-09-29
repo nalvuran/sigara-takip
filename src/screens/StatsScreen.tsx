@@ -3,14 +3,14 @@ import { useAuth } from "../hooks/useAuth";
 import { useSmokesRange } from "../hooks/useSmokes";
 import { useStatsData, type FilterKey } from "../hooks/useStatsData";
 import { useDailyInsight } from "../hooks/useDailyInsight";
-import { Card } from "../components/ui";
+import { Divider } from "../components/ui";
 import { FilterChips } from "../components/FilterChips";
 import { ReasonBreakdownCard } from "../components/ReasonBreakdownCard";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
 
 const ALL_TIME_LOOKBACK_DAYS = 3650;
 
-/** İstatistikler: yorumlama ve örüntü ekranı (sayısal kartlar ve grafik Ana Sayfa'da). */
+/** Ayna: editorial yorum ve örüntü ekranı (sayısal kartlar ve grafik Ana Sayfa'da). */
 export function StatsScreen() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
@@ -27,39 +27,54 @@ export function StatsScreen() {
   const dailyInsight = useDailyInsight(uid, allTimeSmokes, today);
 
   return (
-    <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
-      <h1 className="text-2xl font-bold mb-5">Ayna</h1>
+    <div className="max-w-xl mx-auto px-6 pt-14 pb-32 sm:pt-32">
+      <h1 className="font-serif-display text-[34px] text-[var(--ink)] mb-9 leading-none">
+        Ayna
+      </h1>
 
-      <Card className="!p-5 mb-5">
-        <p className="text-xs text-[var(--ink-soft)] mb-2">💭 Bugünün yorumu</p>
+      {/* Bugünün gözlemi — editorial blok, kart yok */}
+      <div className="mb-10">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-[var(--ink-faint)] uppercase mb-3">
+          Bugünün gözlemi
+        </p>
+
         {dailyInsight ? (
           <>
-            <p className="text-[15px] leading-relaxed text-[var(--ink)]">
+            <p className="text-[16px] leading-[1.6] text-[var(--ink)]">
               {dailyInsight.observation}
             </p>
-            <p className="text-[15px] leading-relaxed font-medium text-[var(--accent)] mt-3">
+
+            <p className="text-[11px] font-semibold tracking-[0.14em] text-[var(--ink-faint)] uppercase mt-7 mb-2">
+              Kendine sor
+            </p>
+            <p className="font-serif-display text-[22px] leading-snug text-[var(--ink)]">
               {dailyInsight.question}
             </p>
-            <div className="mt-4 pt-4 border-t border-[var(--border)]">
-              <p className="text-sm italic leading-relaxed text-[var(--quote)]">
+
+            <Divider />
+            <div className="pt-5">
+              <p className="font-serif-display text-[17px] leading-relaxed text-[var(--quote)]">
                 “{dailyInsight.quote.text}”
               </p>
-              <p className="text-xs text-[var(--ink-faint)] mt-1.5">
-                — {dailyInsight.quote.author}
-                {dailyInsight.quote.source ? `, ${dailyInsight.quote.source}` : ""}
+              <p className="text-[11px] tracking-[0.1em] text-[var(--ink-faint)] uppercase mt-2">
+                {dailyInsight.quote.author}
+                {dailyInsight.quote.source ? ` · ${dailyInsight.quote.source}` : ""}
               </p>
             </div>
           </>
         ) : (
-          <p className="text-sm leading-relaxed text-[var(--ink-soft)]">
+          <p className="text-[15px] leading-relaxed text-[var(--ink-soft)]">
             Henüz yeterli veri yok. Birkaç gün daha kayıt ve sebep girdikçe, burada kendi
             örüntülerini yansıtan yorumlar belirecek.
           </p>
         )}
-      </Card>
+      </div>
 
-      <FilterChips value={filter} onChange={setFilter} />
-      <ReasonBreakdownCard stats={stats} />
+      <Divider />
+      <div className="mt-8">
+        <FilterChips value={filter} onChange={setFilter} />
+        <ReasonBreakdownCard stats={stats} />
+      </div>
     </div>
   );
 }

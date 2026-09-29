@@ -1,58 +1,76 @@
-import { Card } from "./ui";
+import { Divider } from "./ui";
 import { formatMinutesAsDuration } from "../logic/allowance";
 import type { useStatsData } from "../hooks/useStatsData";
 
 type Stats = ReturnType<typeof useStatsData>;
 
 export function StatsGrid({ stats }: { stats: Stats }) {
+  const secondary: { label: string; value: string }[] = [
+    { label: "Günlük maksimum", value: String(stats.dailyMax) },
+    { label: "Günlük minimum", value: String(stats.dailyMin) },
+    {
+      label: "Ortalama aralık",
+      value:
+        stats.averageInterval !== null
+          ? formatMinutesAsDuration(stats.averageInterval)
+          : "—",
+    },
+    {
+      label: "Ort. aralık (gece dahil)",
+      value:
+        stats.averageIntervalOvernight !== null
+          ? formatMinutesAsDuration(stats.averageIntervalOvernight)
+          : "—",
+    },
+    {
+      label: "En uzun sigarasız süre",
+      value: stats.longestGap !== null ? formatMinutesAsDuration(stats.longestGap) : "—",
+    },
+    {
+      label: "En uzun süre (gece dahil)",
+      value:
+        stats.longestGapOvernight !== null
+          ? formatMinutesAsDuration(stats.longestGapOvernight)
+          : "—",
+    },
+    { label: "Toplam harcama", value: `${stats.totalCost.toFixed(2)} TL` },
+  ];
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <StatCard label="Toplam sigara" value={String(stats.totalSmokes)} />
-      <StatCard label="Günlük ortalama" value={stats.dailyAverage.toFixed(1)} />
-      <StatCard
-        label="Günlük ortalama harcama"
-        value={`${stats.dailyAverageCost.toFixed(2)} TL`}
-      />
-      <StatCard label="Günlük maksimum" value={String(stats.dailyMax)} />
-      <StatCard label="Günlük minimum" value={String(stats.dailyMin)} />
-      <StatCard
-        label="Ortalama aralık"
-        value={
-          stats.averageInterval !== null
-            ? formatMinutesAsDuration(stats.averageInterval)
-            : "—"
-        }
-      />
-      <StatCard
-        label="Ort. aralık (gece dahil)"
-        value={
-          stats.averageIntervalOvernight !== null
-            ? formatMinutesAsDuration(stats.averageIntervalOvernight)
-            : "—"
-        }
-      />
-      <StatCard
-        label="En uzun sigarasız süre"
-        value={stats.longestGap !== null ? formatMinutesAsDuration(stats.longestGap) : "—"}
-      />
-      <StatCard
-        label="En uzun süre (gece dahil)"
-        value={
-          stats.longestGapOvernight !== null
-            ? formatMinutesAsDuration(stats.longestGapOvernight)
-            : "—"
-        }
-      />
-      <StatCard label="Toplam harcama" value={`${stats.totalCost.toFixed(2)} TL`} />
+    <div>
+      {/* Birincil metrikler: büyük, karaktersel */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <HeroMetric value={String(stats.totalSmokes)} label="Toplam sigara" />
+        <HeroMetric value={stats.dailyAverage.toFixed(1)} label="Günlük ortalama" />
+        <HeroMetric
+          value={`${stats.dailyAverageCost.toFixed(0)}₺`}
+          label="Günlük ort. harcama"
+        />
+      </div>
+
+      {/* İkincil metrikler: sade, tipografik liste */}
+      <div>
+        {secondary.map((item, i) => (
+          <div key={item.label}>
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-[13px] text-[var(--ink-soft)]">{item.label}</span>
+              <span className="text-[14px] font-medium tabular-nums">{item.value}</span>
+            </div>
+            {i < secondary.length - 1 && <Divider />}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function HeroMetric({ value, label }: { value: string; label: string }) {
   return (
-    <Card className="!p-4">
-      <p className="text-xs text-[var(--ink-soft)] mb-1">{label}</p>
-      <p className="text-xl font-bold text-[var(--ink)]">{value}</p>
-    </Card>
+    <div>
+      <div className="text-[28px] font-bold tracking-tight tabular-nums text-[var(--ink)] leading-none mb-1.5">
+        {value}
+      </div>
+      <p className="text-[11px] text-[var(--ink-faint)] leading-snug">{label}</p>
+    </div>
   );
 }

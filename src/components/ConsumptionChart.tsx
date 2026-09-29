@@ -1,14 +1,5 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  CartesianGrid,
-} from "recharts";
-import { Card } from "./ui";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { SectionLabel } from "./ui";
 
 interface ChartPoint {
   date: string;
@@ -20,12 +11,11 @@ interface ChartPoint {
 export function ConsumptionChart({ data }: { data: ChartPoint[] }) {
   if (data.length === 0) return null;
   return (
-    <Card className="!p-4">
-      <p className="text-xs text-[var(--ink-soft)] mb-3">Günlük tüketim</p>
-      <div style={{ width: "100%", height: 200 }}>
+    <div>
+      <SectionLabel>Günlük tüketim</SectionLabel>
+      <div style={{ width: "100%", height: 160 }}>
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--surface-2)" />
+          <BarChart data={data} margin={{ top: 6, right: 0, left: 0, bottom: 0 }} barSize={14}>
             <XAxis
               dataKey="label"
               tick={{ fontSize: 10, fill: "var(--ink-faint)" }}
@@ -33,27 +23,27 @@ export function ConsumptionChart({ data }: { data: ChartPoint[] }) {
               axisLine={false}
               tickLine={false}
             />
-            <YAxis
-              tick={{ fontSize: 10, fill: "var(--ink-faint)" }}
-              axisLine={false}
-              tickLine={false}
-              allowDecimals={false}
-            />
             <Tooltip
-              formatter={(value: number) => [`${value} sigara`, "Tüketim"]}
-              labelFormatter={(label) => `Tarih: ${label}`}
-              contentStyle={{ borderRadius: 12, border: "none", fontSize: 12 }}
+              cursor={false}
+              formatter={(value: number) => [`${value}`, "Sigara"]}
+              labelFormatter={(label) => label}
+              contentStyle={{
+                borderRadius: 10,
+                border: "none",
+                fontSize: 12,
+                background: "var(--surface)",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+              }}
             />
             <ReferenceLine
               y={data[data.length - 1]?.baseLimit ?? 0}
-              stroke="var(--ink-faint)"
-              strokeDasharray="4 4"
-              label={{ value: "limit", position: "insideTopRight", fontSize: 10, fill: "var(--ink-faint)" }}
+              stroke="var(--border-soft)"
+              strokeDasharray="3 3"
             />
-            <Bar dataKey="consumption" radius={[6, 6, 0, 0]} fill="var(--accent)" />
+            <Bar dataKey="consumption" radius={[3, 3, 0, 0]} fill="var(--accent)" />
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </Card>
+    </div>
   );
 }

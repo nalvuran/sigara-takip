@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type PropsWithChildren } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useUserSettings } from "../hooks/useUserSettings";
 import {
@@ -7,9 +7,21 @@ import {
   resetAllUserData,
 } from "../services/firestoreService";
 import { logOut } from "../services/authService";
-import { Card, PrimaryButton, GhostButton, DangerButton, Switch } from "../components/ui";
+import { PrimaryButton, GhostButton, DangerButton, Switch, SectionLabel, Divider } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
 import { calculateCostPerCigarette } from "../logic/allowance";
+
+function Group({ children }: PropsWithChildren) {
+  return (
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden">
+      {children}
+    </div>
+  );
+}
+
+function Row({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
+  return <div className={`px-4 py-3.5 ${className}`}>{children}</div>;
+}
 
 export function SettingsScreen() {
   const { user } = useAuth();
@@ -26,7 +38,7 @@ export function SettingsScreen() {
 
   if (!settings) {
     return (
-      <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28">
+      <div className="max-w-xl mx-auto px-6 pt-14 sm:pt-32">
         <p className="text-[var(--ink-soft)]">Yükleniyor…</p>
       </div>
     );
@@ -46,8 +58,6 @@ export function SettingsScreen() {
     setSaving(true);
     setMessage(null);
     try {
-      // Değişiklik yarından itibaren geçerli olur; bugünün ve geçmiş günlerin
-      // hesaplamaları bozulmaz.
       const effectiveFrom = addDaysToDateString(todayLocalDateString(), 1);
       await changeDailyLimit(uid!, value, effectiveFrom);
       setLimitInput("");
@@ -101,124 +111,151 @@ export function SettingsScreen() {
     }
   }
 
+  const inputClass =
+    "w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface-3)] outline-none focus:ring-1 focus:ring-[var(--accent)] text-[14px]";
+
   return (
-    <div className="max-w-xl mx-auto px-5 pt-8 pb-28 sm:pt-28 space-y-5">
-      <h1 className="text-2xl font-bold">Ayarlar</h1>
+    <div className="max-w-xl mx-auto px-6 pt-14 pb-32 sm:pt-32">
+      <h1 className="font-serif-display text-[34px] text-[var(--ink)] mb-9 leading-none">
+        Ayarlar
+      </h1>
 
       {message && (
-        <div className="text-sm text-[var(--ink)] bg-[var(--surface-2)] rounded-2xl px-4 py-3">
-          {message}
-        </div>
+        <p className="text-[13px] text-[var(--ink-soft)] mb-6 -mt-4">{message}</p>
       )}
 
-      <Card>
-        <h2 className="font-semibold mb-1">Günlük temel limit</h2>
-        <p className="text-sm text-[var(--ink-soft)] mb-3">
-          Şu an: <span className="font-semibold text-[var(--ink)]">{settings.dailyLimit}</span> sigara/gün
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min={1}
-            placeholder="Örn. 8"
-            value={limitInput}
-            onChange={(e) => setLimitInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          />
-          <PrimaryButton onClick={handleLimitSave} disabled={saving} className="px-5">
-            Kaydet
-          </PrimaryButton>
+      <div className="space-y-8">
+        {/* GÜNLÜK */}
+        <div>
+          <SectionLabel>Günlük</SectionLabel>
+          <Group>
+            <Row className="flex items-center justify-between">
+              <span className="text-[14px] text-[var(--ink)]">Günlük temel limit</span>
+              <span className="text-[14px] font-medium tabular-nums">{settings.dailyLimit}</span>
+            </Row>
+            <Divider />
+            <Row>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Yeni değer"
+                  value={limitInput}
+                  onChange={(e) => setLimitInput(e.target.value)}
+                  className={inputClass}
+                />
+                <PrimaryButton onClick={handleLimitSave} disabled={saving} className="px-5 text-[14px]">
+                  Kaydet
+                </PrimaryButton>
+              </div>
+              <p className="text-[11px] text-[var(--ink-faint)] mt-2">
+                Değişiklik yarından itibaren geçerli olur, geçmiş günler etkilenmez.
+              </p>
+            </Row>
+          </Group>
         </div>
-        <p className="text-xs text-[var(--ink-faint)] mt-2">
-          Değişiklik yarından itibaren geçerli olur, geçmiş günler etkilenmez.
-        </p>
-      </Card>
 
-      <Card>
-        <h2 className="font-semibold mb-1">Paket bilgisi</h2>
-        <p className="text-sm text-[var(--ink-soft)] mb-3">
-          {settings.packagePrice} TL / {settings.cigarettesPerPack} adet ·{" "}
-          <span className="font-semibold text-[var(--ink)]">
-            {costPerCigarette.toFixed(2)} TL
-          </span>{" "}
-          / sigara
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min={0}
-            placeholder={`Fiyat (${settings.packagePrice})`}
-            value={priceInput}
-            onChange={(e) => setPriceInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          />
-          <input
-            type="number"
-            min={1}
-            placeholder={`Adet (${settings.cigarettesPerPack})`}
-            value={countInput}
-            onChange={(e) => setCountInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 rounded-2xl bg-[var(--surface-3)] outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          />
+        {/* PAKET */}
+        <div>
+          <SectionLabel>Paket</SectionLabel>
+          <Group>
+            <Row className="flex items-center justify-between">
+              <span className="text-[14px] text-[var(--ink)]">Paket / adet / sigara başı</span>
+              <span className="text-[14px] font-medium tabular-nums">
+                {settings.packagePrice}₺ / {settings.cigarettesPerPack} / {costPerCigarette.toFixed(2)}₺
+              </span>
+            </Row>
+            <Divider />
+            <Row>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="number"
+                  min={0}
+                  placeholder={`Fiyat (${settings.packagePrice})`}
+                  value={priceInput}
+                  onChange={(e) => setPriceInput(e.target.value)}
+                  className={inputClass}
+                />
+                <input
+                  type="number"
+                  min={1}
+                  placeholder={`Adet (${settings.cigarettesPerPack})`}
+                  value={countInput}
+                  onChange={(e) => setCountInput(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <PrimaryButton onClick={handlePackageSave} disabled={saving} className="w-full py-2.5 text-[14px]">
+                Kaydet
+              </PrimaryButton>
+            </Row>
+          </Group>
         </div>
-        <PrimaryButton onClick={handlePackageSave} disabled={saving} className="w-full py-2.5 mt-3">
-          Kaydet
-        </PrimaryButton>
-      </Card>
 
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold mb-1">Görünüm</h2>
-            <p className="text-sm text-[var(--ink-soft)]">Karanlık mod</p>
-          </div>
-          <Switch
-            checked={!!settings.darkMode}
-            onChange={handleToggleDarkMode}
-            label="Karanlık modu aç/kapat"
-          />
+        {/* GÖRÜNÜM */}
+        <div>
+          <SectionLabel>Görünüm</SectionLabel>
+          <Group>
+            <Row className="flex items-center justify-between">
+              <span className="text-[14px] text-[var(--ink)]">Karanlık mod</span>
+              <Switch
+                checked={!!settings.darkMode}
+                onChange={handleToggleDarkMode}
+                label="Karanlık modu aç/kapat"
+              />
+            </Row>
+          </Group>
         </div>
-      </Card>
 
-      <Card>
-        <h2 className="font-semibold mb-1">Hesap</h2>
-        <p className="text-sm text-[var(--ink-soft)] mb-3">{user?.email}</p>
-        <GhostButton onClick={() => logOut()} className="w-full py-2.5">
-          Çıkış Yap
-        </GhostButton>
-      </Card>
+        {/* HESAP */}
+        <div>
+          <SectionLabel>Hesap</SectionLabel>
+          <Group>
+            <Row>
+              <p className="text-[13px] text-[var(--ink-faint)]">{user?.email}</p>
+            </Row>
+            <Divider />
+            <button onClick={() => logOut()} className="w-full text-left">
+              <Row>
+                <span className="text-[14px] text-[var(--ink)]">Çıkış yap</span>
+              </Row>
+            </button>
+          </Group>
+        </div>
 
-      <Card>
-        <p className="text-sm text-[var(--ink-soft)] mb-3">
-          Tüm sigara geçmişini, istatistikleri ve günlük hak devir kayıtlarını siler.
-          Günlük limit, paket fiyatı ve hesabın korunur.
-        </p>
-
-        {!confirmingReset ? (
-          <DangerButton onClick={() => setConfirmingReset(true)} className="w-full py-2.5">
-            Tüm Verileri Sıfırla
-          </DangerButton>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-[var(--danger)]">
-              Tüm sigara geçmişiniz, istatistikleriniz ve günlük hak geçmişiniz
-              silinecek. Bu işlem geri alınamaz.
-            </p>
-            <div className="flex gap-2">
-              <GhostButton
-                onClick={() => setConfirmingReset(false)}
-                className="flex-1 py-2.5"
-                disabled={resetting}
-              >
-                Vazgeç
-              </GhostButton>
-              <DangerButton onClick={handleReset} className="flex-1 py-2.5" disabled={resetting}>
-                {resetting ? "Siliniyor…" : "Evet, Sıfırla"}
-              </DangerButton>
-            </div>
-          </div>
-        )}
-      </Card>
+        {/* VERİ */}
+        <div>
+          <SectionLabel>Veri</SectionLabel>
+          <Group>
+            {!confirmingReset ? (
+              <button onClick={() => setConfirmingReset(true)} className="w-full text-left">
+                <Row>
+                  <span className="text-[14px] text-[var(--danger)]">Tüm verileri sıfırla</span>
+                </Row>
+              </button>
+            ) : (
+              <Row>
+                <p className="text-[13px] leading-relaxed text-[var(--ink-soft)] mb-3">
+                  Tüm sigara geçmişin, istatistiklerin ve günlük hak geçmişin silinecek. Günlük
+                  limit, paket fiyatı ve hesabın korunur. Bu işlem geri alınamaz.
+                </p>
+                <div className="flex gap-2">
+                  <GhostButton
+                    onClick={() => setConfirmingReset(false)}
+                    className="flex-1 py-2.5 text-[14px]"
+                    disabled={resetting}
+                  >
+                    Vazgeç
+                  </GhostButton>
+                  <DangerButton onClick={handleReset} className="flex-1 py-2.5 text-[14px]" disabled={resetting}>
+                    {resetting ? "Siliniyor…" : "Evet, sıfırla"}
+                  </DangerButton>
+                </div>
+              </Row>
+            )}
+          </Group>
+        </div>
+      </div>
     </div>
   );
 }
