@@ -24,8 +24,24 @@ export function StatsGrid({ stats }: { stats: Stats }) {
         }
       />
       <StatCard
+        label="Ort. aralık (gece dahil)"
+        value={
+          stats.averageIntervalOvernight !== null
+            ? formatMinutesAsDuration(stats.averageIntervalOvernight)
+            : "—"
+        }
+      />
+      <StatCard
         label="En uzun sigarasız süre"
         value={stats.longestGap !== null ? formatMinutesAsDuration(stats.longestGap) : "—"}
+      />
+      <StatCard
+        label="En uzun süre (gece dahil)"
+        value={
+          stats.longestGapOvernight !== null
+            ? formatMinutesAsDuration(stats.longestGapOvernight)
+            : "—"
+        }
       />
       <StatCard label="Toplam harcama" value={`${stats.totalCost.toFixed(2)} TL`} />
     </div>
