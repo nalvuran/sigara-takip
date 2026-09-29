@@ -51,7 +51,9 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
     const dailyMax = dayCounts.length ? Math.max(...dayCounts) : 0;
     const dailyMin = dayCounts.length ? Math.min(...dayCounts) : 0;
 
-    // Aralıklar günlük bazda hesaplanır (gece geçişleri aralığa katılmaz).
+    // Ortalama aralık günlük bazda hesaplanır (gece geçişleri katılmaz, uyanıkken
+    // ki tempoyu yansıtır). En uzun sigarasız süre ise tüm zaman çizelgesine
+    // bakar (gece dahil) — gerçekten en uzun boşluk budur.
     let allIntervals: number[] = [];
     const byDate = new Map<string, number[]>();
     for (const s of smokes) {
@@ -62,6 +64,13 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
     for (const list of byDate.values()) {
       allIntervals = allIntervals.concat(calculateSmokingIntervals(list));
     }
+
+    const sortedTimestamps = [...smokes]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map((s) => s.timestamp);
+    const trueLongestGap = calculateLongestSmokeFreeInterval(
+      calculateSmokingIntervals(sortedTimestamps)
+    );
 
     const totalCost = ledgerEntries.reduce(
       (sum, e) => sum + e.consumption * costPerCigarette,
@@ -88,7 +97,7 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
       dailyMax,
       dailyMin,
       averageInterval: calculateAverageInterval(allIntervals),
-      longestGap: calculateLongestSmokeFreeInterval(allIntervals),
+      longestGap: trueLongestGap,
       totalCost,
       chartData,
       reasonBreakdown,
