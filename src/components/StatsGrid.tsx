@@ -16,22 +16,8 @@ export function StatsGrid({ stats }: { stats: Stats }) {
           : "—",
     },
     {
-      label: "Ort. aralık (gece dahil)",
-      value:
-        stats.averageIntervalOvernight !== null
-          ? formatMinutesAsDuration(stats.averageIntervalOvernight)
-          : "—",
-    },
-    {
       label: "En uzun sigarasız süre",
       value: stats.longestGap !== null ? formatMinutesAsDuration(stats.longestGap) : "—",
-    },
-    {
-      label: "En uzun süre (gece dahil)",
-      value:
-        stats.longestGapOvernight !== null
-          ? formatMinutesAsDuration(stats.longestGapOvernight)
-          : "—",
     },
     { label: "Toplam harcama", value: `${stats.totalCost.toFixed(2)} TL` },
   ];
