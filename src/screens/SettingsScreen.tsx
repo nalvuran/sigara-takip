@@ -7,7 +7,7 @@ import {
   resetAllUserData,
 } from "../services/firestoreService";
 import { logOut } from "../services/authService";
-import { PrimaryButton, GhostButton, DangerButton, Switch, SectionLabel, Divider } from "../components/ui";
+import { PrimaryButton, GhostButton, DangerButton, SectionLabel, Divider } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
 
 function Group({ children }: PropsWithChildren) {
@@ -81,14 +81,6 @@ export function SettingsScreen() {
       setMessage("Güncellenemedi, tekrar deneyin.");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleToggleDarkMode(next: boolean) {
-    try {
-      await updateUserSettings(uid!, { darkMode: next });
-    } catch {
-      setMessage("Tema değiştirilemedi, tekrar deneyin.");
     }
   }
 
@@ -182,21 +174,6 @@ export function SettingsScreen() {
               <PrimaryButton onClick={handlePackageSave} disabled={saving} className="w-full py-2.5 text-[14px]">
                 Kaydet
               </PrimaryButton>
-            </Row>
-          </Group>
-        </div>
-
-        {/* GÖRÜNÜM */}
-        <div>
-          <SectionLabel>Görünüm</SectionLabel>
-          <Group>
-            <Row className="flex items-center justify-between">
-              <span className="text-[14px] text-[var(--ink)]">Karanlık mod</span>
-              <Switch
-                checked={!!settings.darkMode}
-                onChange={handleToggleDarkMode}
-                label="Karanlık modu aç/kapat"
-              />
             </Row>
           </Group>
         </div>

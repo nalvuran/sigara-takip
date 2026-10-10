@@ -2,14 +2,11 @@ import { useEffect } from "react";
 import type { UserSettings } from "../types";
 
 /**
- * Kullanıcının Ayarlar'dan seçtiği temayı (settings.darkMode) <html>
- * elemanına "dark" class'ı olarak uygular. Firestore'un canlı dinleyicisi
- * sayesinde, Ayarlar'da değiştirilen tercih anında (sayfa yenilenmeden) tüm
- * ekranlara yayılır. Giriş yapılmamışken veya ayar henüz yüklenmemişken
- * her zaman açık mod kullanılır.
+ * Karanlık mod seçeneği kaldırıldı; uygulama her zaman açık temada çalışır.
+ * Eskiden kaydedilmiş darkMode değeri olsa bile "dark" sınıfı kaldırılır.
  */
-export function useThemeSync(settings: UserSettings | null) {
+export function useThemeSync(_settings: UserSettings | null) {
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", !!settings?.darkMode);
-  }, [settings?.darkMode]);
+    document.documentElement.classList.remove("dark");
+  }, []);
 }
