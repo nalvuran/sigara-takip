@@ -154,13 +154,26 @@ export function HistoryScreen() {
               {group.list.map((s, i) => (
                 <div
                   key={s.id}
-                  className={`flex items-start gap-4 py-3 ${
+                  className={`flex items-start gap-3 py-3 ${
                     i < group.list.length - 1 ? "border-b border-[var(--border)]" : ""
                   }`}
                 >
                   <div className="w-[52px] shrink-0 pt-0.5 text-[15px] font-medium tabular-nums text-[var(--ink)]">
                     {toLocalTimeString(s.timestamp)}
                   </div>
+                  {(() => {
+                    const def = getReasonDef(s.reason);
+                    const Icon = def.icon;
+                    return (
+                      <div
+                        className={`w-8 h-8 shrink-0 rounded-full bg-[var(--surface-3)] flex items-center justify-center ${
+                          s.reason ? "text-[var(--accent)]" : "text-[var(--ink-faint)]"
+                        }`}
+                      >
+                        <Icon size={16} strokeWidth={1.6} />
+                      </div>
+                    );
+                  })()}
                   <div className="flex-1">
                     <p className="text-[14px] text-[var(--ink)]">
                       {s.reason ? getReasonDef(s.reason).label : "—"}
