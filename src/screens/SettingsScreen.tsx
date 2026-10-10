@@ -9,7 +9,6 @@ import {
 import { logOut } from "../services/authService";
 import { PrimaryButton, GhostButton, DangerButton, Switch, SectionLabel, Divider } from "../components/ui";
 import { addDaysToDateString, todayLocalDateString } from "../logic/dateUtils";
-import { calculateCostPerCigarette } from "../logic/allowance";
 
 function Group({ children }: PropsWithChildren) {
   return (
@@ -43,11 +42,6 @@ export function SettingsScreen() {
       </div>
     );
   }
-
-  const costPerCigarette = calculateCostPerCigarette(
-    settings.packagePrice,
-    settings.cigarettesPerPack
-  );
 
   async function handleLimitSave() {
     const value = Number(limitInput);
@@ -160,9 +154,9 @@ export function SettingsScreen() {
           <SectionLabel>Paket</SectionLabel>
           <Group>
             <Row className="flex items-center justify-between">
-              <span className="text-[14px] text-[var(--ink)]">Paket / adet / sigara başı</span>
+              <span className="text-[14px] text-[var(--ink)]">Paket</span>
               <span className="text-[14px] font-medium tabular-nums">
-                {settings.packagePrice}₺ / {settings.cigarettesPerPack} / {costPerCigarette.toFixed(2)}₺
+                {settings.packagePrice}₺ / {settings.cigarettesPerPack} adet
               </span>
             </Row>
             <Divider />
