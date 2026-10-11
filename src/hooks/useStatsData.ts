@@ -76,6 +76,16 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
     const intervalsWithOpenGap =
       openGapMinutes !== null ? [...intervals, openGapMinutes] : intervals;
 
+    // Ortalama aralık: açık boşluk (son sigaradan beri geçen süre) kapanmış
+    // aralıkların ortalamasını zaten aşmışsa hesaba katılır. Aksi halde yeni
+    // içilmiş bir sigara ortalamayı yapay olarak düşürürdü.
+    const closedAverage = calculateAverageInterval(intervals);
+    const includeOpenGap =
+      openGapMinutes !== null && closedAverage !== null && openGapMinutes > closedAverage;
+    const averageInterval = includeOpenGap
+      ? calculateAverageInterval(intervalsWithOpenGap)
+      : closedAverage;
+
     const totalCost = ledgerEntries.reduce(
       (sum, e) => sum + e.consumption * costPerCigarette,
       0
@@ -100,7 +110,7 @@ export function useStatsData(uid: string | null, filter: FilterKey) {
       dailyAverageCost: dailyAverage * costPerCigarette,
       dailyMax,
       dailyMin,
-      averageInterval: calculateAverageInterval(intervals),
+      averageInterval,
       longestGap: calculateLongestSmokeFreeInterval(intervalsWithOpenGap),
       totalCost,
       chartData,
