@@ -145,18 +145,65 @@ export async function ensureTodayLedger(
   today: string,
   baseLimit: number
 ): Promise<void> {
-  const yesterday = addDaysToDateString(today, -1);
   const todayRef = ledgerRef(uid, today);
-  const yesterdayRef = ledgerRef(uid, yesterday);
+
+  // Bugünden önceki en son ledger kaydını bul. Uygulama arada açılmadıysa
+  // (hiç sigara içilmeyen günler dahil) dün kaydı olmayabilir; zincir
+  // kopmasın ve içilmeyen günlerin hakları devretsin diye eksik günler
+  // aşağıda doldurulur.
+  const lastSnap = await getDocs(
+    query(
+      collection(db, "users", uid, "dailyLedger"),
+      where("date", "<", today),
+      orderBy("date", "desc"),
+      fsLimit(1)
+    )
+  );
+  const lastEntry = lastSnap.empty ? null : (lastSnap.docs[0].data() as DailyLedgerEntry);
 
   await runTransaction(db, async (tx) => {
     const todaySnap = await tx.get(todayRef);
-    if (todaySnap.exists()) return; // zaten var, dokunma
-
-    const yesterdaySnap = await tx.get(yesterdayRef);
-    const previousRemaining = yesterdaySnap.exists()
-      ? (yesterdaySnap.data() as DailyLedgerEntry).remaining
+    const yesterdaySnap = await tx.get(ledgerRef(uid, addDaysToDateString(today, -1)));
+    // Bugün kaydı var ve zincir kopuk değilse dokunma. Zincir kopuksa (dün
+    // kaydı yok ama daha eski kayıt var) eksik günler doldurulup bugünün
+    // devri düzeltilir; bugünün tüketimi korunur.
+    if (todaySnap.exists() && (yesterdaySnap.exists() || !lastEntry)) return;
+    const existingConsumption = todaySnap.exists()
+      ? (todaySnap.data() as DailyLedgerEntry).consumption
       : 0;
+
+    let previousRemaining = 0;
+
+    if (lastEntry) {
+      const lastRef = ledgerRef(uid, lastEntry.date);
+      const lastFresh = await tx.get(lastRef);
+      const last = (lastFresh.exists() ? lastFresh.data() : lastEntry) as DailyLedgerEntry;
+      previousRemaining = last.remaining;
+
+      // Son kayıt ile bugün arasındaki boş günleri sıfır tüketimle doldur.
+      let cursor = addDaysToDateString(last.date, 1);
+      let guard = 0;
+      while (cursor < today && guard < MAX_BACKFILL_DAYS) {
+        const allowance = calculateDailyAllowance(last.baseLimit, previousRemaining);
+        tx.set(ledgerRef(uid, cursor), {
+          date: cursor,
+          baseLimit: last.baseLimit,
+          previousRemaining,
+          allowance,
+          consumption: 0,
+          remaining: allowance,
+          isFinalized: true,
+          updatedAt: Date.now(),
+        } satisfies DailyLedgerEntry);
+        previousRemaining = allowance;
+        cursor = addDaysToDateString(cursor, 1);
+        guard++;
+      }
+
+      if (!last.isFinalized) {
+        tx.update(lastRef, { isFinalized: true });
+      }
+    }
 
     const allowance = calculateDailyAllowance(baseLimit, previousRemaining);
 
@@ -165,17 +212,12 @@ export async function ensureTodayLedger(
       baseLimit,
       previousRemaining,
       allowance,
-      consumption: 0,
-      remaining: allowance,
+      consumption: existingConsumption,
+      remaining: calculateRemainingAllowance(allowance, existingConsumption),
       isFinalized: false,
       updatedAt: Date.now(),
     };
     tx.set(todayRef, entry);
-
-    // Dünün kaydı finalize edilmemişse (örn. uygulama hiç açılmadıysa) finalize et.
-    if (yesterdaySnap.exists() && !yesterdaySnap.data().isFinalized) {
-      tx.update(yesterdayRef, { isFinalized: true });
-    }
   });
 }
 
